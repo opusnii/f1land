@@ -96,7 +96,7 @@ const PAIRS: Record<string, readonly [ru: string, en: string]> = {
     'The first new global race control state in the window counts. Local yellow flags are excluded; a repeated message is one transition. "No neutralisation" requires full observation of the window; a data gap voids the pool.',
   ],
   'f1.market.m11.title': ['Где будет гонщик', 'Where will the driver be'],
-  'f1.market.m11.question': ['Где будет {driver} в момент {at}?', 'Where will {driver} be at {at}?'],
+  'f1.market.m11.question': ['Где будет {driver} в момент замера?', 'Where will {driver} be at the snapshot?'],
   'f1.market.m11.rule': [
     'Используется подтверждённое состояние на момент {at}: сектор, боксы / пит-лейн (включая гараж) или статус. Приоритет: DSQ → DNS → RETIRED → боксы / пит-лейн → сектор. Положение на схеме не является источником. Неустранимая неопределённость на границе — VOID.',
     'The confirmed state at {at} is used: sector, garage / pit lane (garage included) or status. Precedence: DSQ → DNS → RETIRED → garage / pit lane → sector. The map position is never the source. Unresolvable uncertainty at a boundary voids the pool.',
