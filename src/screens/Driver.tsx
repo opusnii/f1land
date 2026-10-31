@@ -7,21 +7,18 @@ import { useLive } from '@/store/live';
 import { useNav } from '@/store/nav';
 import { useSettings } from '@/store/settings';
 import { SubHeader } from '@/app/Header';
-import { Card, DriverAvatar, TeamBar, TyreBadge } from '@/ui/kit';
+import { Card, DriverAvatar, TyreBadge } from '@/ui/kit';
+import { Flag } from '@/ui/Obj';
 import { IconChevron, IconEye, IconPit, IconStar, IconTimer, IconTrophy } from '@/ui/icons';
-import { flagEmoji, fmtGap, fmtLap, fmtNumber, getLang, t } from '@/i18n/core';
+import { fmtGap, fmtLap, fmtNumber, getLang, t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { Bar, Reveal, useBack } from './common';
+import { DriverHero } from '@/ui/races/DriverHero';
+import { KV } from '@/ui/races/meeting';
 import { NotFound } from './Races';
 
-export function countryName(cc: string): string {
-  try {
-    return new Intl.DisplayNames([getLang()], { type: 'region' }).of(cc) ?? cc;
-  } catch {
-    return cc;
-  }
-}
+export { countryName } from '@/ui/races/util';
 
 export function DriverScreen({ driverId }: { driverId: string }) {
   const back = useBack();
@@ -73,78 +70,42 @@ function DriverBody({ d }: { d: Driver }) {
         }
       />
       <Reveal i={0}>
-        <div className="sc-dhero" style={style}>
-          <div className="sc-dhero__num display" aria-hidden="true">
-            {d.number}
-          </div>
-          <div className="sc-dhero__stripe" aria-hidden="true" />
-          <div className="sc-dhero__body">
-            <DriverAvatar id={d.id} size={92} ring />
-            <div className="sc-dhero__txt">
-              <span className="sc-dhero__first">{d.firstName}</span>
-              <span className="sc-dhero__last" style={{ fontSize: Math.min(21, Math.round(175 / (d.lastName.length * 0.95))) }}>
-                {d.lastName}
-              </span>
-              <span className="sc-dhero__team">
-                <TeamBar id={d.id} />
-                {team.name}
-              </span>
-              <span className="sc-dhero__nat">
-                {flagEmoji(d.countryCode)} {countryName(d.countryCode)} · <b className="num">#{d.number}</b> · {d.code}
-              </span>
-            </div>
-          </div>
-          {isFav && (
-            <span className="sc-dhero__fav">
-              <IconStar size={12} />
-              {t('scr.driver.yourFav')}
-            </span>
-          )}
-        </div>
+        <DriverHero d={d} isFav={isFav} />
       </Reveal>
 
-      <Reveal i={1} className="section">
+      <Reveal i={1} className="section rc-sec">
         <div className="section__head">
           <h2 className="section__title">{t('scr.driver.live')}</h2>
           {ch && <span className="sc-note">DEMO · {t(`session.${ch.sessionType}`)}</span>}
         </div>
-        <Card glow={!!car} pad className="sc-dlive">
+        <Card glow={!!car} className="dr-live">
           {car ? (
             <>
-              <div className="sc-dlive__top">
-                <div className="sc-dlive__pos">
-                  <span>{t('scr.driver.pos')}</span>
-                  <span className="sc-dlive__posv">
+              <div className="dr-live__top">
+                <div className="dr-live__pos">
+                  <span className="dr-live__k">{t('scr.driver.pos')}</span>
+                  <span className="dr-live__posv">
                     <b className="num">P{car.position}</b>
                     <i className="num">/{totalCars}</i>
                   </span>
                 </div>
-                <div className="sc-dlive__gap">
-                  <span>{car.position === 1 ? t('scr.driver.leading') : t('scr.driver.gap')}</span>
+                <div className="dr-live__gap">
+                  <span className="dr-live__k">{car.position === 1 ? t('scr.driver.leading') : t('scr.driver.gap')}</span>
                   <b className="num">{car.position === 1 ? '—' : fmtGap(car.gapMs, 3)}</b>
                 </div>
-                <div className="sc-dlive__tyre">
+                <div className="dr-live__tyre">
                   <TyreBadge compound={car.tyre} size={30} />
-                  <span className="num">
-                    {car.tyreAgeLaps} {t('scr.driver.lapsShort')}
+                  <span>
+                    <span className="num">{car.tyreAgeLaps}</span> {t('scr.driver.lapsShort')}
                   </span>
                 </div>
               </div>
-              <div className="sc-kvgrid sc-kvgrid--3">
-                <div className="sc-kv">
-                  <span className="sc-kv__v num">{fmtLap(car.lastLapMs)}</span>
-                  <span className="sc-kv__k">{t('scr.driver.lastLap')}</span>
-                </div>
-                <div className="sc-kv">
-                  <span className="sc-kv__v num purple">{fmtLap(car.bestLapMs)}</span>
-                  <span className="sc-kv__k">{t('scr.driver.bestLap')}</span>
-                </div>
-                <div className="sc-kv">
-                  <span className="sc-kv__v num">{car.pitStops}</span>
-                  <span className="sc-kv__k">{t('scr.driver.stops')}</span>
-                </div>
+              <div className="rc-kvgrid">
+                <KV k={t('scr.driver.lastLap')} v={fmtLap(car.lastLapMs)} />
+                <KV k={t('scr.driver.bestLap')} v={fmtLap(car.bestLapMs)} tone="purple" />
+                <KV k={t('scr.driver.stops')} v={String(car.pitStops)} />
               </div>
-              <div className="sc-dlive__status">
+              <div className="dr-live__status">
                 <span className={`badge ${car.status === 'ACTIVE' ? 'badge--lime' : 'badge--red'}`}>{t(`status.${car.status}`)}</span>
                 {car.gridPosition > 0 && (
                   <span className="muted">
@@ -161,7 +122,7 @@ function DriverBody({ d }: { d: Driver }) {
               </div>
             </>
           ) : (
-            <div className="sc-dlive__none">
+            <div className="dr-live__none">
               <IconTimer size={20} />
               {t('scr.driver.notLive')}
             </div>
@@ -173,14 +134,14 @@ function DriverBody({ d }: { d: Driver }) {
         </Card>
       </Reveal>
 
-      <Reveal i={2} className="section">
+      <Reveal i={2} className="section rc-sec">
         <div className="section__head">
           <h2 className="section__title">{t('scr.driver.season')}</h2>
           <span className="sc-note">DEMO</span>
         </div>
         <div className="sc-statgrid">
           <div className="sc-stat sc-stat--hl">
-            <span className="sc-stat__v num lime">P{season.rank}</span>
+            <span className="sc-stat__v num">P{season.rank}</span>
             <span className="sc-stat__k">{t('scr.driver.champ')}</span>
           </div>
           <div className="sc-stat">
@@ -205,16 +166,16 @@ function DriverBody({ d }: { d: Driver }) {
           </div>
         </div>
         {season.form.length > 0 && (
-          <Card className="sc-form">
-            <div className="sc-form__k">{t('scr.driver.form')}</div>
-            <div className="sc-form__row">
+          <Card className="dr-form">
+            <div className="dr-form__k">{t('scr.driver.form')}</div>
+            <div className="dr-form__row">
               {season.form.map((f) => {
                 const m = getMeeting(f.meetingId);
                 const tone = f.dnf ? 'dnf' : f.pos === 1 ? 'win' : f.pos <= 3 ? 'pod' : f.pos <= 10 ? 'pts' : 'out';
                 return (
-                  <button key={f.meetingId} className="sc-form__chip" data-tone={tone} onClick={() => push({ name: 'meeting', meetingId: f.meetingId })} aria-label={`${m.name[getLang()]}: ${f.dnf ? 'DNF' : `P${f.pos}`}`}>
+                  <button key={f.meetingId} className="dr-form__chip" data-tone={tone} onClick={() => push({ name: 'meeting', meetingId: f.meetingId })} aria-label={`${m.name[getLang()]}: ${f.dnf ? 'DNF' : `P${f.pos}`}`}>
                     <b className="num">{f.dnf ? 'DNF' : `P${f.pos}`}</b>
-                    <span>{flagEmoji(m.countryCode)}</span>
+                    <Flag cc={m.countryCode} size={18} />
                   </button>
                 );
               })}
@@ -223,12 +184,12 @@ function DriverBody({ d }: { d: Driver }) {
         )}
       </Reveal>
 
-      <Reveal i={3} className="section">
+      <Reveal i={3} className="section rc-sec">
         <div className="section__head">
           <h2 className="section__title">{t('scr.driver.traits')}</h2>
           <span className="sc-note">{t('scr.driver.traitsNote')}</span>
         </div>
-        <Card className="sc-traits">
+        <Card className="dr-traits">
           {(
             [
               ['pace', d.pace, 'lime'],
@@ -236,8 +197,8 @@ function DriverBody({ d }: { d: Driver }) {
               ['consistency', d.consistency, 'purple'],
             ] as const
           ).map(([k, v, tone]) => (
-            <div key={k} className="sc-trait">
-              <span className="sc-trait__k">{t(`scr.driver.${k}`)}</span>
+            <div key={k} className="dr-trait">
+              <span className="dr-trait__k">{t(`scr.driver.${k}`)}</span>
               <Bar value={v} max={1} tone={tone} label={t(`scr.driver.${k}`)} />
               <b className="num">{Math.round(v * 100)}</b>
             </div>
@@ -245,34 +206,31 @@ function DriverBody({ d }: { d: Driver }) {
         </Card>
       </Reveal>
 
-      <Reveal i={4} className="section">
+      <Reveal i={4} className="section rc-sec">
         <div className="section__head">
           <h2 className="section__title">{t('scr.driver.team')}</h2>
         </div>
-        <Card className="sc-team" pad>
-          <div className="sc-team__head" style={style}>
-            <span className="sc-team__swatch" />
+        <Card className="dr-team">
+          <div className="dr-team__head" style={style}>
+            <span className="dr-team__swatch" aria-hidden="true" />
             <div>
               <b>{team.name}</b>
               <div className="muted">{t('scr.driver.engine', { e: team.engine })}</div>
             </div>
           </div>
-          <div className="sc-kvgrid">
-            <div className="sc-kv">
-              <span className="sc-kv__v num">{Math.round(team.carPace * 100)}</span>
-              <span className="sc-kv__k">{t('scr.driver.carPace')}</span>
-            </div>
-            <div className="sc-kv">
-              <span className="sc-kv__v num">
-                <IconPit size={14} /> {fmtNumber(team.pitCrewMs / 1000, 2)} {t('scr.s')}
+          <div className="rc-kvgrid rc-kvgrid--2">
+            <KV k={t('scr.driver.carPace')} v={String(Math.round(team.carPace * 100))} />
+            <div className="rc-kv">
+              <span className="rc-kv__v">
+                <IconPit size={14} /> <span className="num">{fmtNumber(team.pitCrewMs / 1000, 2)}</span> {t('scr.s')}
               </span>
-              <span className="sc-kv__k">{t('scr.driver.pitCrew')}</span>
+              <span className="rc-kv__k">{t('scr.driver.pitCrew')}</span>
             </div>
           </div>
           {mate && (
-            <button className="sc-mate" onClick={() => push({ name: 'driver', driverId: mate.id })}>
+            <button className="dr-mate" onClick={() => push({ name: 'driver', driverId: mate.id })}>
               <DriverAvatar id={mate.id} size={36} />
-              <span className="sc-mate__txt">
+              <span className="dr-mate__txt">
                 <span className="muted">{t('scr.driver.teammate')}</span>
                 <b>
                   {mate.firstName} {mate.lastName}
