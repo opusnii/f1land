@@ -5,10 +5,13 @@ import { CIRCUIT_META } from '@/data/circuits';
 import { playerStats } from '@/demo/progress';
 import { SubHeader } from '@/app/Header';
 import { poolTexts } from '@/app/poolText';
-import { Card, Chip } from '@/ui/kit';
-import { IconChevron, IconHistory, IconPlay } from '@/ui/icons';
-import { flagEmoji, fmtClock, fmtNumber, getLang, t } from '@/i18n/core';
-import { EntryBadge, Empty, PageHead, Reveal, groupByDay, signed, useBack } from './common';
+import { Chip } from '@/ui/kit';
+import { Flag } from '@/ui/Obj';
+import { EmptyState } from '@/ui/primitives';
+import { MechIcon } from '@/ui/profile/objects';
+import { IconChevron, IconPlay } from '@/ui/icons';
+import { fmtClock, fmtNumber, getLang, t } from '@/i18n/core';
+import { EntryBadge, PageHead, Reveal, groupByDay, signed, useBack } from './common';
 
 type F = 'all' | EntryState;
 
@@ -42,7 +45,7 @@ export function HistoryScreen() {
     <>
       <SubHeader onBack={back} />
       <PageHead title={t('profile.history')} sub={t('scr.history.sub')} />
-      <Card className="sc-hsum" pad>
+      <div className="card hs-sum">
         <div>
           <b className="num">{stats.total}</b>
           <span>{t('profile.entries')}</span>
@@ -59,38 +62,40 @@ export function HistoryScreen() {
           <b className={`num ${stats.profit > 0 ? 'lime' : stats.profit < 0 ? 'red' : ''}`}>{signed(stats.profit, (x) => fmtNumber(x))}</b>
           <span>{t('profile.profit')}</span>
         </div>
-      </Card>
-      <div className="sc-chips" role="group" aria-label={t('scr.history.filter')}>
+      </div>
+      <div className="hs-chips" role="group" aria-label={t('scr.history.filter')}>
         {FILTERS.map((x) => (
           <Chip key={x.id} on={f === x.id} onClick={() => setF(x.id)}>
             {t(x.key)}
-            <span className="sc-chips__n num">{counts[x.id]}</span>
+            <span className="hs-chips__n num">{counts[x.id]}</span>
           </Chip>
         ))}
       </div>
       {groups.length === 0 ? (
-        <Card>
-          <Empty
-            icon={<IconHistory size={26} />}
+        <div className="card">
+          <EmptyState
+            art={entries.length ? undefined : 'empty-history'}
             title={entries.length ? t('scr.history.emptyFilter') : t('entries.empty')}
+            body={entries.length ? undefined : t('pv2.hist.emptyBody')}
+            compact={!!entries.length}
             action={
               !entries.length && (
                 <button className="btn btn--primary" onClick={() => go('live')}>
                   <IconPlay size={16} />
-                  {t('entries.emptyCta')}
+                  {t('pv2.toLive')}
                 </button>
               )
             }
           />
-        </Card>
+        </div>
       ) : (
         groups.map((g) => (
-          <div key={g.key} className="sc-txgroup">
+          <div key={g.key} className="hs-group">
             <div className="sc-daylabel">
               {g.label}
               <span className="num">{g.items.length}</span>
             </div>
-            <div className="sc-hlist">
+            <div className="hs-list">
               {g.items.map((e) => (
                 <Reveal key={e.id} i={n++}>
                   <HistoryRow e={e} onOpen={() => push({ name: 'entry', entryId: e.id })} />
@@ -115,25 +120,30 @@ function HistoryRow({ e, onOpen }: { e: Entry; onOpen: () => void }) {
   }
   const pending = e.state === 'PENDING';
   return (
-    <button className="sc-hrow" data-state={e.state} onClick={onOpen}>
-      <span className="sc-hrow__top">
-        <span className="flag">{flagEmoji(meta?.countryCode ?? '')}</span>
-        <span className="sc-hrow__meet ellipsis">{e.meetingName[lang] || meta?.name}</span>
-        <span className="sc-hrow__time num muted">{fmtClock(e.createdAt)}</span>
+    <button className="card hs-row" data-state={e.state} onClick={onOpen}>
+      <span className="hs-row__top">
+        <span className="hs-row__mech" aria-hidden="true">
+          <MechIcon pool={e.pool} size={16} />
+        </span>
+        <span className="hs-row__fam ellipsis">{tx.title || e.meetingName[lang] || meta?.name}</span>
         <EntryBadge e={e} />
       </span>
-      {tx.title && <span className="sc-hrow__fam">{tx.title}</span>}
-      <span className="sc-hrow__q">{tx.question}</span>
-      <span className="sc-hrow__foot">
-        <span className="sc-hrow__pick ellipsis">
+      <span className="hs-row__q">{tx.question}</span>
+      <span className="hs-row__meet">
+        <Flag cc={meta?.countryCode} size={16} />
+        <span className="ellipsis">{e.meetingName[lang] || meta?.name}</span>
+        <span className="num">· {fmtClock(e.createdAt)}</span>
+      </span>
+      <span className="hs-row__foot">
+        <span className="hs-row__pick">
           <i>{t('entries.yourPick')}</i>
-          <b>{e.outcomeLabel}</b>
+          <b className="ellipsis">{e.outcomeLabel}</b>
         </span>
-        <span className="sc-hrow__num">
+        <span className="hs-row__num">
           <i>{t('entries.stake')}</i>
           <b className="num">{fmtNumber(e.stake)}</b>
         </span>
-        <span className="sc-hrow__num">
+        <span className="hs-row__num">
           <i>{pending ? t('entries.potential') : t('entries.payout')}</i>
           <b className={`num ${e.state === 'WON' ? 'lime' : e.state === 'LOST' ? 'sc-neg' : ''}`}>{pending ? `≈${fmtNumber(Math.round(e.stake * e.estimate))}` : fmtNumber(e.payout)}</b>
         </span>
