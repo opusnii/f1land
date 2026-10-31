@@ -1,4 +1,4 @@
-/* Home: one quiet surface per job, 4px spacing scale, lime only for live state and actions. */
+/* Home (spec §9.1): art and light in the hero and the next call; lists, streak and progress stay quiet. */
 
 .home {
   display: flex;
@@ -11,26 +11,64 @@
   margin-bottom: 8px;
 }
 
-/* ---------- Live now ---------- */
-.hm-live {
-  padding: 16px;
+/* ---------- Live now (S3 hero) ---------- */
+.hm-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  /* 16:10 is the floor; RU titles at 320 px may grow it instead of clipping. */
+  aspect-ratio: 16 / 10;
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: var(--r-hero);
+  overflow: clip;
+  box-shadow:
+    var(--rim),
+    0 0 0 1px var(--s1-stroke);
+  cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
 }
-.hm-live__head {
+.hm-hero:active {
+  transform: scale(0.99);
+}
+.hm-hero:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.hm-hero__art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+/* Top scrim for the title; the plate's own scrim darkens the bottom. */
+.hm-hero__art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(7, 9, 11, 0.78) 0%, rgba(7, 9, 11, 0.2) 38%, transparent 55%);
+  pointer-events: none;
+}
+.hm-hero__top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
-.hm-live__on {
+.hm-hero__live {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--red);
-  font-size: 12px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: var(--r-chip);
+  background: rgba(255, 59, 71, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 59, 71, 0.45);
+  color: #ff6b74;
   font-weight: 700;
-  letter-spacing: 0.08em;
 }
-.hm-live__on i {
+.hm-hero__live i {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -42,146 +80,183 @@
     opacity: 0.35;
   }
 }
-.hm-live__lap {
+.hm-hero__lap {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: var(--r-chip);
+  background: var(--s1-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  line-height: 24px;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
-.hm-live__lap b {
-  color: var(--text);
-  font-weight: 600;
+.hm-hero__lap .techlabel {
+  color: var(--text-2);
 }
-.hm-live__title {
+.hm-hero__lap b {
+  color: var(--lime);
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+.hm-hero__title {
   margin: 8px 0 0;
-  font-size: 20px;
+  font-size: var(--fs-xl);
   font-weight: 700;
   line-height: 1.2;
   text-wrap: balance;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
 }
-.hm-live__sub {
+.hm-hero__sub {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  min-width: 0;
-  margin-top: 2px;
-  color: var(--muted);
-  font-size: 13px;
+  gap: 4px 8px;
+  margin: 2px 0 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.7);
 }
-.hm-flag {
-  flex: none;
-  padding: 2px 8px;
+.hm-hero__flag {
+  padding: 1px 8px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 700;
+  text-shadow: none;
 }
-.hm-flag--sc {
-  background: rgba(255, 209, 46, 0.14);
+.hm-hero__flag--sc {
+  background: rgba(30, 24, 4, 0.9);
   color: var(--yellow);
 }
-.hm-flag--red {
-  background: rgba(255, 59, 71, 0.16);
-  color: var(--red);
+.hm-hero__flag--red {
+  background: rgba(40, 8, 11, 0.9);
+  color: #ff8088;
 }
-.hm-live__body {
+.hm-hero__body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px;
-  align-items: center;
-  gap: 12px;
-  margin-top: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  align-items: end;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 10px;
 }
 .hm-tower {
   display: grid;
-  gap: 2px;
+  gap: 0;
   margin: 0;
-  padding: 0;
+  padding: 4px 8px;
+  border-radius: var(--r-tile);
   list-style: none;
 }
 .hm-tower li {
   display: grid;
-  grid-template-columns: 16px 3px minmax(0, 1fr) auto;
+  grid-template-columns: 12px 24px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  font-size: 14px;
+  gap: 6px;
+  height: 30px;
+  font-size: var(--fs-sm);
+}
+.hm-tower li + li {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .hm-tower b {
   font-weight: 700;
   letter-spacing: 0.02em;
 }
 .hm-tower__pos {
-  color: var(--muted);
+  color: var(--text-2);
   text-align: right;
 }
 .hm-tower__gap {
   color: var(--text-2);
-  font-size: 13px;
+  font-size: var(--fs-xs);
 }
 .hm-tower__on b {
   color: var(--lime);
 }
-.hm-tower__skel {
-  border-radius: 6px;
+li.hm-tower__skel {
+  height: 22px;
+  margin: 4px 0;
+  border-top: 0;
 }
-.hm-live__map {
+.hm-hero__map {
   display: grid;
   place-items: center;
-  height: 104px;
+  min-height: 96px;
 }
-.hm-map {
-  width: 150px;
-  height: 104px;
+.hm-hero__svg {
+  width: 100%;
+  height: auto;
+  max-height: 124px;
 }
-.hm-map .trackmap__sector {
-  stroke: rgba(255, 255, 255, 0.5);
+.hm-hero__sync {
+  color: var(--text-2);
+  font-size: var(--fs-xs);
 }
-.hm-map .trackmap__base {
-  stroke: rgba(255, 255, 255, 0.04);
-}
-.hm-map .trackmap__edge {
-  stroke: rgba(255, 255, 255, 0.08);
-}
-.hm-live__sync {
-  color: var(--muted);
-  font-size: 12px;
-}
-.hm-live__go {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 4px;
-  margin-top: 8px;
-  color: var(--lime);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* ---------- Next call ---------- */
-.hm-next {
-  padding: 16px;
-}
-.hm-next__meta {
+.hm-hero__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  color: var(--muted);
-  font-size: 13px;
+  gap: 8px;
+  margin-top: 8px;
 }
-.hm-next__timer {
+.hm-hero__approx {
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+.hm-hero__go {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   flex: none;
-  color: var(--text);
-  font-size: 15px;
-  font-weight: 600;
+  color: var(--lime);
+  font-size: var(--fs-md);
+  font-weight: 700;
 }
-.hm-next__timer--urgent,
-.hm-urgent {
-  color: var(--orange);
+
+/* ---------- Next call ---------- */
+.hm-next {
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+.hm-next:active {
+  transform: scale(0.99);
+}
+.hm-next:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.hm-next__plate {
+  height: 88px;
+}
+.hm-next__plate-body {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 16px;
+}
+.hm-next__plate .display-title__icon {
+  color: var(--text);
+}
+.hm-next__meta {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.hm-next__body {
+  padding: 12px 16px 16px;
 }
 .hm-next__q {
-  margin-top: 6px;
-  font-size: 18px;
+  margin: 0;
+  font-size: var(--fs-xl);
   font-weight: 700;
   line-height: 1.25;
   text-wrap: balance;
@@ -194,51 +269,45 @@
 }
 .hm-out {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  min-height: 52px;
+  padding: 6px 8px;
+}
+.hm-out__vis {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 26px;
+  height: 26px;
   color: var(--text-2);
-  font-size: 13px;
+}
+.hm-out__txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.hm-out__l {
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.15;
 }
 .hm-out b {
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 600;
-}
-.hm-next__bar {
-  height: 2px;
-  margin-top: 12px;
-  border-radius: 1px;
-  background: rgba(255, 255, 255, 0.06);
-  overflow: hidden;
-}
-.hm-next__bar span {
-  display: block;
-  height: 100%;
-  background: var(--lime);
-  transition: width 1s linear;
-}
-.hm-next__bar span[data-urgent] {
-  background: var(--orange);
 }
 .hm-next__foot {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px 12px;
   margin-top: 12px;
-}
-.hm-next__bank {
-  min-width: 0;
-  color: var(--muted);
-  font-size: 13px;
-}
-.hm-next__bank .num {
-  color: var(--text);
-  font-weight: 600;
 }
 .hm-next__cta {
   flex: none;
@@ -251,17 +320,17 @@
   gap: 12px;
   padding: 16px;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 .hm-skel {
-  height: 196px;
-  border-radius: var(--radius);
+  height: 300px;
+  border-radius: var(--r-card);
 }
 
 /* ---------- Lists: picks in play, open now ---------- */
 .hm-count {
   color: var(--muted);
-  font-size: 14px;
+  font-size: var(--fs-md);
 }
 .hm-list {
   display: flex;
@@ -272,7 +341,7 @@
   align-items: center;
   gap: 12px;
   min-height: 60px;
-  padding: 10px 12px 10px 16px;
+  padding: 10px 12px 10px 14px;
   color: var(--muted);
   text-align: left;
 }
@@ -281,6 +350,10 @@
 }
 .hm-row:active {
   background: rgba(255, 255, 255, 0.03);
+}
+.hm-row__icon {
+  flex: none;
+  color: var(--text-2);
 }
 .hm-row__main {
   display: flex;
@@ -295,17 +368,17 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: var(--text);
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 600;
   line-height: 1.3;
 }
 .hm-row__sub {
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 .hm-row__side {
   flex: none;
   color: var(--lime);
-  font-size: 14px;
+  font-size: var(--fs-md);
   font-weight: 600;
 }
 .hm-more {
@@ -316,13 +389,112 @@
   min-height: 44px;
   border-top: 1px solid var(--stroke);
   color: var(--text-2);
-  font-size: 13px;
+  font-size: var(--fs-sm);
   font-weight: 600;
 }
+.hm-urgent {
+  color: var(--orange);
+}
 
-/* ---------- Streak (shared component, quieted here) ---------- */
-.home .card.stk--compact {
+/* ---------- Streak: flame object + seven pit lights ---------- */
+.hm-streak {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-top: 24px;
+  padding: 8px 12px 8px 8px;
+}
+.hm-streak__main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  min-height: 56px;
+  color: var(--text);
+  text-align: left;
+}
+.hm-streak__flame {
+  flex: none;
+}
+.hm-streak[data-cold] .hm-streak__flame {
+  filter: grayscale(0.85) brightness(0.8);
+}
+.hm-streak__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.hm-streak__txt b {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.hm-streak__chev {
+  flex: none;
+  color: var(--muted);
+}
+.hm-lights {
+  display: flex;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* A pit light: dark lens, lit lime once the day is banked; today waits with a ring. */
+.hm-lights li {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #2a3238, #12171b 70%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.hm-lights li[data-state='done'] {
+  background: radial-gradient(circle at 35% 30%, #efffc2, var(--lime) 45%, #7fb012);
+  box-shadow: 0 0 0 1px rgba(198, 255, 61, 0.35);
+}
+.hm-lights li[data-state='today'] {
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1.5px var(--lime);
+  animation: hm-light 1.6s ease-in-out infinite;
+}
+@keyframes hm-light {
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 0 0 1.5px rgba(198, 255, 61, 0.35);
+  }
+}
+.hm-streak__claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 44px;
+  padding: 0 14px;
+  border-radius: var(--r-tile);
+  background: rgba(198, 255, 61, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(198, 255, 61, 0.45);
+  color: var(--lime);
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+.hm-streak__claim:active {
+  background: rgba(198, 255, 61, 0.2);
+}
+.hm-coinfly {
+  position: fixed;
+  z-index: 60;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3b0, #ffd12e 45%, #b8860b);
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 0, 0.5);
+  pointer-events: none;
 }
 
 /* ---------- Progress ---------- */
@@ -331,19 +503,25 @@
   align-items: center;
   gap: 12px;
   margin-top: 24px;
-  padding: 12px 16px 12px 12px;
+  padding: 10px 16px 10px 8px;
 }
 .hm-prog__lvl {
+  position: relative;
   display: grid;
   place-items: center;
   flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  background: rgba(198, 255, 61, 0.12);
-  color: var(--lime);
-  font-size: 18px;
+  width: 48px;
+  height: 48px;
+}
+.hm-prog__lvl b {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: var(--fs-md);
   font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
 }
 .hm-prog__main {
   display: flex;
@@ -354,13 +532,14 @@
 }
 .hm-prog__top {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   justify-content: space-between;
-  gap: 8px;
-  font-size: 13px;
+  gap: 2px 8px;
+  font-size: var(--fs-sm);
 }
 .hm-prog__top b {
-  font-size: 15px;
+  font-size: var(--fs-md);
 }
 .hm-prog__top .num {
   white-space: nowrap;
@@ -390,23 +569,44 @@
   align-items: center;
   gap: 4px;
   color: var(--yellow);
-  font-size: 15px;
+  font-size: var(--fs-md);
   font-weight: 700;
 }
 .hm-prog__rank small {
   color: var(--muted);
-  font-size: 11px;
+  font-size: var(--fs-xs);
 }
 
+.home__tagline {
+  align-self: center;
+  margin-top: 28px;
+  transform-origin: center;
+}
 .home__note {
-  margin: 24px 8px 0;
-  font-size: 12px;
+  margin: 16px 8px 0;
+  font-size: var(--fs-xs);
   line-height: 1.4;
   text-align: center;
 }
 
-/* The thumbnail map is too small for driver tags; the tower beside it names them. */
-.hm-map .trackmap__dot rect,
-.hm-map .trackmap__label {
-  display: none;
+@media (max-width: 359px) {
+  .hm-hero__body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  }
+  .hm-out {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+}
+
+.reduce-motion .hm-hero__live i,
+.reduce-motion .hm-lights li[data-state='today'] {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-hero__live i,
+  .hm-lights li[data-state='today'] {
+    animation: none;
+  }
 }
