@@ -22,23 +22,21 @@ export function useYou() {
 
 export function AchievementsGrid({ list, onOpen }: { list: AchievementState[]; onOpen: (a: AchievementState) => void }) {
   return (
-    <div className="sc-ach-grid">
-      {list.map((a, i) => (
-        <Reveal key={a.def.id} i={i}>
-          <button className="sc-ach" data-on={a.unlocked || undefined} data-tone={a.def.tone} onClick={() => onOpen(a)} aria-label={`${t(`scr.ach.${a.def.id}`)}${a.unlocked ? '' : ` — ${t('scr.locked')}`}`}>
-            <span className="sc-ach__ic">
-              <AchGlyph icon={a.def.icon} size={22} />
-            </span>
-            <span className="sc-ach__t">{t(`scr.ach.${a.def.id}`)}</span>
+    <ul className="pf-badges">
+      {list.map((a) => (
+        <li key={a.def.id}>
+          <button type="button" className="pf-badge" data-on={a.unlocked || undefined} onClick={() => onOpen(a)} aria-label={`${t(`scr.ach.${a.def.id}`)}${a.unlocked ? '' : ` — ${t('scr.locked')}`}`}>
+            <AchBadge a={a} size={56} />
+            <span className="pf-badge__t">{t(`scr.ach.${a.def.id}`)}</span>
             {!a.unlocked && a.progress > 0 && (
-              <span className="sc-ach__p">
+              <span className="pf-badge__p" aria-hidden="true">
                 <i style={{ width: `${Math.round(a.progress * 100)}%` }} />
               </span>
             )}
           </button>
-        </Reveal>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
@@ -46,14 +44,12 @@ export function AchievementSheet({ a, onClose }: { a: AchievementState | null; o
   return (
     <PortalSheet open={!!a} onClose={onClose} label={t('profile.achievements')} title={t('profile.achievements')}>
       {a && (
-        <div className="sc-achd" data-tone={a.def.tone} data-on={a.unlocked || undefined}>
-          <span className="sc-achd__ic">
-            <AchGlyph icon={a.def.icon} size={40} />
-          </span>
+        <div className="pf-achd" data-on={a.unlocked || undefined}>
+          <AchBadge a={a} size={112} label />
           <h3>{t(`scr.ach.${a.def.id}`)}</h3>
           <p>{t(`scr.ach.${a.def.id}.d`, { n: a.def.goal })}</p>
-          <Bar value={Math.min(a.value, a.def.goal)} max={a.def.goal} tone={a.def.tone} />
-          <div className="sc-achd__p num">{t('rewards.progress', { a: fmtNumber(Math.min(a.value, a.def.goal)), b: fmtNumber(a.def.goal) })}</div>
+          <Bar value={Math.min(a.value, a.def.goal)} max={a.def.goal} tone={a.unlocked ? 'lime' : a.def.tone} label={t(`scr.ach.${a.def.id}`)} />
+          <div className="pf-achd__p num">{t('rewards.progress', { a: fmtNumber(Math.min(a.value, a.def.goal)), b: fmtNumber(a.def.goal) })}</div>
           <span className={`badge ${a.unlocked ? 'badge--lime' : 'badge--ghost'}`}>
             {a.unlocked ? <IconCheck size={12} /> : <IconLock size={12} />}
             {a.unlocked ? t('scr.unlocked') : t('scr.locked')}
