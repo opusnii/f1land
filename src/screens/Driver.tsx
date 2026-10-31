@@ -7,21 +7,18 @@ import { useLive } from '@/store/live';
 import { useNav } from '@/store/nav';
 import { useSettings } from '@/store/settings';
 import { SubHeader } from '@/app/Header';
-import { Card, DriverAvatar, TeamBar, TyreBadge } from '@/ui/kit';
+import { Card, DriverAvatar, TyreBadge } from '@/ui/kit';
+import { Flag } from '@/ui/Obj';
 import { IconChevron, IconEye, IconPit, IconStar, IconTimer, IconTrophy } from '@/ui/icons';
-import { flagEmoji, fmtGap, fmtLap, fmtNumber, getLang, t } from '@/i18n/core';
+import { fmtGap, fmtLap, fmtNumber, getLang, t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { Bar, Reveal, useBack } from './common';
+import { DriverHero } from '@/ui/races/DriverHero';
+import { KV } from '@/ui/races/meeting';
 import { NotFound } from './Races';
 
-export function countryName(cc: string): string {
-  try {
-    return new Intl.DisplayNames([getLang()], { type: 'region' }).of(cc) ?? cc;
-  } catch {
-    return cc;
-  }
-}
+export { countryName } from '@/ui/races/util';
 
 export function DriverScreen({ driverId }: { driverId: string }) {
   const back = useBack();
@@ -73,34 +70,7 @@ function DriverBody({ d }: { d: Driver }) {
         }
       />
       <Reveal i={0}>
-        <div className="sc-dhero" style={style}>
-          <div className="sc-dhero__num display" aria-hidden="true">
-            {d.number}
-          </div>
-          <div className="sc-dhero__stripe" aria-hidden="true" />
-          <div className="sc-dhero__body">
-            <DriverAvatar id={d.id} size={92} ring />
-            <div className="sc-dhero__txt">
-              <span className="sc-dhero__first">{d.firstName}</span>
-              <span className="sc-dhero__last" style={{ fontSize: Math.min(21, Math.round(175 / (d.lastName.length * 0.95))) }}>
-                {d.lastName}
-              </span>
-              <span className="sc-dhero__team">
-                <TeamBar id={d.id} />
-                {team.name}
-              </span>
-              <span className="sc-dhero__nat">
-                {flagEmoji(d.countryCode)} {countryName(d.countryCode)} · <b className="num">#{d.number}</b> · {d.code}
-              </span>
-            </div>
-          </div>
-          {isFav && (
-            <span className="sc-dhero__fav">
-              <IconStar size={12} />
-              {t('scr.driver.yourFav')}
-            </span>
-          )}
-        </div>
+        <DriverHero d={d} isFav={isFav} />
       </Reveal>
 
       <Reveal i={1} className="section">
@@ -214,7 +184,7 @@ function DriverBody({ d }: { d: Driver }) {
                 return (
                   <button key={f.meetingId} className="sc-form__chip" data-tone={tone} onClick={() => push({ name: 'meeting', meetingId: f.meetingId })} aria-label={`${m.name[getLang()]}: ${f.dnf ? 'DNF' : `P${f.pos}`}`}>
                     <b className="num">{f.dnf ? 'DNF' : `P${f.pos}`}</b>
-                    <span>{flagEmoji(m.countryCode)}</span>
+                    <Flag cc={m.countryCode} size={18} />
                   </button>
                 );
               })}
