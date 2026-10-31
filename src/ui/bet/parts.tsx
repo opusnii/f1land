@@ -1,50 +1,31 @@
 /* Prediction UI building blocks: countdown ring, outcome tiles, confetti, stat cells, pool meta. */
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
-import { fmtCountdown, fmtNumber, t } from '@/i18n/core';
+import { fmtNumber, t } from '@/i18n/core';
 import { useSettings, prefersReducedMotion } from '@/store/settings';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
+import { LockTimer } from '@/ui/LockTimer';
+import { IconLock } from '@/ui/icons';
 import { IcCoins, IcTrophy, IcYes } from './icons';
 import { OddsTicker } from './motionBits';
 import '@/styles/pool.css';
+
+export { EventTimeline, GapMeter, SectorGlyph, StintBar } from './viz';
 
 /* ------------------------------------------------------------------ */
 /* Countdown ring                                                      */
 /* ------------------------------------------------------------------ */
 
-export function CountdownRing({ ms, totalMs, size = 44, locked, label }: { ms: number; totalMs: number; size?: number; locked?: boolean; label?: string }) {
-  const r = (size - 6) / 2;
-  const c = 2 * Math.PI * r;
-  const frac = locked ? 0 : Math.max(0, Math.min(1, totalMs > 0 ? ms / totalMs : 0));
-  const color = locked ? 'var(--muted)' : ms < 10_000 ? 'var(--red)' : frac < 0.3 ? 'var(--yellow)' : 'var(--lime)';
-  const secs = Math.ceil(ms / 1000);
-  return (
-    <span className={`cd-ring ${!locked && ms < 10_000 ? 'cd-ring--urgent' : ''}`} style={{ width: size, height: size }} role="timer" aria-label={label ?? fmtCountdown(ms)}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="rgba(8,12,14,.6)" stroke="rgba(255,255,255,.08)" strokeWidth="3" />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          stroke={color}
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeDasharray={c}
-          strokeDashoffset={c * (1 - frac)}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-          style={{ transition: 'stroke-dashoffset .25s linear, stroke .3s' }}
-        />
-      </svg>
-      <span className="cd-ring__v num" style={{ color, fontSize: size < 40 ? 10 : 12 }}>
-        {locked ? '—' : secs >= 600 ? fmtCountdown(ms).replace(/:\d\d$/, '′') : secs >= 100 ? fmtCountdown(ms) : secs}
-      </span>
-    </span>
-  );
+/**
+ * Kept for existing callers (live pool panel). One timer logic for every pool surface:
+ * a thin wrapper over `<LockTimer variant="ring">`, which supplies its own accessible label.
+ */
+export function CountdownRing({ ms, totalMs, size = 44, locked }: { ms: number; totalMs: number; size?: number; locked?: boolean; label?: string }) {
+  return <LockTimer variant="ring" ms={ms} totalMs={totalMs} size={size} accept={!locked} status={locked ? 'LOCKED' : 'OPEN'} />;
 }
 
 /* ------------------------------------------------------------------ */
-/* Outcome tile                                                        */
+/* Outcome tile (S2 → S2-sel)                                          */
 /* ------------------------------------------------------------------ */
 
 export type TileVariant = 'tile' | 'driver' | 'row' | 'num' | 'zone' | 'wide';
@@ -53,6 +34,7 @@ export interface OutcomeTileProps {
   variant?: TileVariant;
   label: ReactNode;
   sub?: ReactNode;
+  /** Object or mini-visual (tyre, flag, helmet, sector outline, big glyph). */
   icon?: ReactNode;
   odds: number | null;
   checked: boolean;
@@ -63,11 +45,14 @@ export interface OutcomeTileProps {
   color?: string;
   /** Share of the DEMO pool already on this outcome (0..1). */
   share?: number | null;
+  /** Intake closed (not yet settled): lock overlay + desaturation. */
+  locked?: boolean;
   ariaLabel?: string;
   onSelect: () => void;
 }
 
-export function OutcomeTile({ variant = 'tile', label, sub, icon, odds, checked, disabled, result, mine, color, share, ariaLabel, onSelect }: OutcomeTileProps) {
+export function OutcomeTile({ variant = 'tile', label, sub, icon, odds, checked, disabled, result, mine, color, share, locked, ariaLabel, onSelect }: OutcomeTileProps) {
+  const cls = ['ot', 'tile', `ot--${variant}`, checked && 'ot--on', disabled && 'ot--off', result && `ot--${result}`, mine && 'ot--mine', locked && !result && 'ot--locked'].filter(Boolean).join(' ');
   return (
     <button
       type="button"
@@ -75,7 +60,7 @@ export function OutcomeTile({ variant = 'tile', label, sub, icon, odds, checked,
       aria-checked={checked}
       aria-disabled={disabled}
       aria-label={ariaLabel}
-      className={`ot ot--${variant} ${checked ? 'ot--on' : ''} ${disabled ? 'ot--off' : ''} ${result ? `ot--${result}` : ''} ${mine ? 'ot--mine' : ''}`}
+      className={cls}
       style={color ? ({ ['--ot-c' as string]: color } as CSSProperties) : undefined}
       onClick={() => {
         if (disabled) {
@@ -83,7 +68,7 @@ export function OutcomeTile({ variant = 'tile', label, sub, icon, odds, checked,
           return;
         }
         if (!checked) {
-          haptic.tap();
+          haptic.impact('light');
           sfx.select();
         }
         onSelect();
@@ -99,7 +84,11 @@ export function OutcomeTile({ variant = 'tile', label, sub, icon, odds, checked,
           <IcTrophy size={13} />
         </span>
       )}
-      {icon && <span className="ot__icon">{icon}</span>}
+      {icon && (
+        <span className="ot__vis" aria-hidden="true">
+          {icon}
+        </span>
+      )}
       <span className="ot__text">
         <span className="ot__label">{label}</span>
         {sub && <span className="ot__sub">{sub}</span>}
@@ -109,6 +98,11 @@ export function OutcomeTile({ variant = 'tile', label, sub, icon, odds, checked,
       {share !== undefined && share !== null && share > 0 && (
         <span className="ot__share" aria-hidden="true">
           <span style={{ transform: `scaleX(${Math.min(1, share)})` }} />
+        </span>
+      )}
+      {locked && !result && (
+        <span className="ot__lock" aria-hidden="true">
+          <IconLock size={14} />
         </span>
       )}
     </button>
