@@ -332,7 +332,7 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
           <i />
         </span>
       )}
-      <span className="sw__knob" style={{ transform: x ? `translate3d(${x}px, 0, 0)` : undefined, transition: dragging ? 'none' : 'transform 0.35s var(--ease-spring)' }} aria-hidden="true">
+      <span className="sw__knob" style={{ transform: x ? `translate3d(${x}px, 0, 0)` : undefined, transition: dragging ? 'none' : 'transform 0.35s var(--ease-out)' }} aria-hidden="true">
         {locked ? <IconLock size={18} /> : <IconChevron size={22} />}
       </span>
     </div>

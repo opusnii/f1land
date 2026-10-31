@@ -9,3 +9,5 @@ e2e/__screens__
 .DS_Store
 .hoplite/
 .dev-tools/
+.tmp/
+assets-src/

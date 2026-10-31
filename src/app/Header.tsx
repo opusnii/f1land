@@ -2,7 +2,8 @@ import { useWallet } from '@/store/wallet';
 import { useNav } from '@/store/nav';
 import { t, fmtNumber } from '@/i18n/core';
 import { telegramUser, haptic } from '@/telegram/sdk';
-import { IconCoin, IconPlus, LogoPulse } from '@/ui/icons';
+import { IconPlus, LogoPulse } from '@/ui/icons';
+import { Obj } from '@/ui/Obj';
 import { DriverAvatar } from '@/ui/kit';
 import { useSettings } from '@/store/settings';
 
@@ -14,14 +15,11 @@ export function Header({ right }: { right?: React.ReactNode }) {
   const user = telegramUser();
   return (
     <header className="topbar">
-      <div className="brand">
-        <LogoPulse className="brand__logo" />
-        <div className="brand__text">
-          <span className="brand__name">
-            PULSE <b>ARENA</b>
-          </span>
-          <span className="brand__sub">{t('app.module')}</span>
-        </div>
+      <div className="brand logo-lockup" aria-label="Pulse Arena">
+        <LogoPulse className="logo-lockup__mark" />
+        <span className="logo-lockup__word" aria-hidden="true">
+          PULSE <b>ARENA</b>
+        </span>
       </div>
       <div className="topbar__spacer" />
       {right}
@@ -33,10 +31,7 @@ export function Header({ right }: { right?: React.ReactNode }) {
           push({ name: 'wallet' });
         }}
       >
-        <span className="balance-chip__mode" aria-hidden="true">
-          {t('app.demo')}
-        </span>
-        <IconCoin size={16} className="icon balance-chip__coin" />
+        <Obj name="coin" size={22} className="balance-chip__coin" priority />
         <span className="balance-chip__val num" key={balance}>
           {fmtNumber(balance)}
         </span>

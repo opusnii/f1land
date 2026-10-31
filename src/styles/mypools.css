@@ -309,7 +309,7 @@
 .mypools .xticket--won .xticket__orb {
   color: #0b1200;
   background: radial-gradient(circle at 40% 32%, #ecffad, #93d61c 75%);
-  animation: mp-orb 0.8s var(--ease-spring) both;
+  animation: mp-orb 0.8s var(--ease-out) both;
 }
 .mypools .xticket--won .xticket__orb::before,
 .mypools .xticket--won .xticket__orb::after {

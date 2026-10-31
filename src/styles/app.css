@@ -1,6 +1,8 @@
 /* Onest covers Cyrillic; Titillium Web had Latin only, so RU copy fell back to the system face. */
 @import '@fontsource-variable/onest/index.css';
-@import '@fontsource/michroma/400.css';
+/* Display face with Cyrillic (Michroma had none, so RU lost the brand voice). Italic axis only. */
+@import '@fontsource-variable/exo-2/wght-italic.css';
+@import '@fontsource/caveat/600.css';
 @import '@fontsource/chakra-petch/500.css';
 @import '@fontsource/chakra-petch/600.css';
 @import '@fontsource/chakra-petch/700.css';
@@ -35,7 +37,8 @@
   --radius-sm: 12px;
   --radius-xs: 9px;
   --font: 'Onest Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Michroma', 'Onest Variable', sans-serif;
+  --font-display: 'Exo 2 Variable', 'Onest Variable', sans-serif;
+  --font-hand: 'Caveat', 'Onest Variable', cursive;
   --font-num: 'Chakra Petch', 'Onest Variable', sans-serif;
   --tg-safe-top: 0px;
   --tg-safe-bottom: 0px;
@@ -46,8 +49,54 @@
   --nav-gap: max(10px, calc(var(--safe-bottom) - 12px));
   /* Distance from the viewport bottom to the nav's top edge; 0 + safe area when hidden. */
   --nav-top: calc(var(--nav-gap) + var(--nav-h));
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Motion (spec §6). No bounce/elastic curves; exits are faster than entrances. */
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 320ms;
+  --dur-4: 560ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Light budget (spec §2): glow only on the selected outcome, the primary CTA, the track, and wins. */
+  --lime-hi: #d8ff6a;
+  --lime-lo: #a8ec22;
+  --glow-lime: 0 10px 28px -10px rgba(198, 255, 61, 0.55);
+  --glow-sel: 0 8px 22px -10px rgba(198, 255, 61, 0.5);
+  --rim: inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  --scrim-b: linear-gradient(180deg, rgba(7, 9, 11, 0) 35%, rgba(7, 9, 11, 0.85) 78%, #07090b 100%);
+  --scrim-l: linear-gradient(90deg, rgba(7, 9, 11, 0.92) 0%, rgba(7, 9, 11, 0.55) 55%, rgba(7, 9, 11, 0) 100%);
+  --scrim-r: linear-gradient(270deg, rgba(7, 9, 11, 0.92) 0%, rgba(7, 9, 11, 0.55) 55%, rgba(7, 9, 11, 0) 100%);
+
+  /* Surfaces S1–S2 (spec §3). */
+  --s1: linear-gradient(180deg, #141b20, #0e1418);
+  --s1-stroke: rgba(255, 255, 255, 0.06);
+  --s1-glass: rgba(12, 17, 20, 0.62);
+  --s2: rgba(255, 255, 255, 0.04);
+  --s2-sel: linear-gradient(180deg, rgba(198, 255, 61, 0.16), rgba(198, 255, 61, 0.03));
+
+  /* Radii 8/12/16/24 and the 4–48 spacing scale. */
+  --r-chip: 8px;
+  --r-tile: 12px;
+  --r-card: 16px;
+  --r-hero: 24px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+  --sp-7: 48px;
+  --gutter: 16px;
+
+  /* Type scale: 12/13/15/17/20/24/32/44. */
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 15px;
+  --fs-lg: 17px;
+  --fs-xl: 20px;
+  --fs-2xl: 24px;
+  --fs-3xl: 32px;
+  --fs-4xl: 44px;
   color-scheme: dark;
 }
 
@@ -182,7 +231,7 @@ input {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  padding: calc(var(--safe-top) + 8px) 14px calc(var(--nav-top) + 18px);
+  padding: calc(var(--safe-top) + 8px) var(--gutter) calc(var(--nav-top) + 18px);
   scrollbar-width: none;
 }
 
@@ -300,14 +349,12 @@ input {
   letter-spacing: 0.08em;
   color: var(--muted);
 }
-.balance-chip__coin.icon {
-  width: 17px;
-  height: 17px;
-  color: var(--lime);
+.balance-chip__coin {
+  margin-left: -4px;
 }
 .balance-chip__val {
   display: inline-block;
-  animation: bump 0.55s var(--ease-spring);
+  animation: bump 0.55s var(--ease-out);
 }
 .balance-chip__plus {
   display: none;
@@ -335,8 +382,8 @@ input {
 .avatar-btn:active {
   transform: scale(0.93);
 }
-.avatar-btn img,
-.avatar-btn svg {
+.avatar-btn > img,
+.avatar-btn > svg {
   width: 100%;
   height: 100%;
   display: block;
@@ -407,10 +454,18 @@ input {
 
 .card {
   position: relative;
-  border-radius: var(--radius);
-  background: var(--panel-solid);
-  border: 1px solid var(--stroke);
+  border-radius: var(--r-card);
+  background: var(--s1);
+  border: 1px solid var(--s1-stroke);
+  box-shadow: var(--rim);
   overflow: hidden;
+}
+
+/* S1-glass: only on top of art (hero plates, the live scene). */
+.card--glass {
+  background: var(--s1-glass);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
 }
 
 /* Emphasis is a slightly stronger edge, never a halo. */
@@ -583,39 +638,120 @@ input {
   transform: scale(0.96);
 }
 
-/* Buttons */
+/* Buttons (spec §6): rest · pressed · loading · success · disabled-with-reason. */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-height: 46px;
   height: 46px;
   padding: 0 18px;
   border-radius: 14px;
   font-weight: 700;
   font-size: 15px;
-  transition: transform 0.15s var(--ease-out), filter 0.2s, opacity 0.2s;
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out),
+    filter var(--dur-1),
+    background-color var(--dur-2);
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .btn:active {
-  transform: scale(0.97);
+  transform: translateY(1px);
 }
 
-.btn:disabled {
-  opacity: 0.45;
-  filter: grayscale(0.6);
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  color: var(--muted);
+  background: #232a30;
+  box-shadow: none;
+  border-color: transparent;
+  cursor: not-allowed;
   pointer-events: none;
 }
 
 .btn--primary {
   color: #0b1200;
-  background: var(--lime);
+  background: linear-gradient(180deg, var(--lime-hi), var(--lime-lo));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    var(--glow-lime);
+}
+.btn--primary:active {
+  filter: brightness(0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 6px 16px -10px rgba(198, 255, 61, 0.5);
+}
+/* Loading: width is held by the hidden label; a highlight sweeps across. */
+.btn[data-state='loading'] {
+  pointer-events: none;
+}
+.btn[data-state='loading'] > * {
+  visibility: hidden;
+}
+.btn[data-state='loading']::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.7s linear infinite;
+}
+.btn--primary[data-state='loading']::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: btn-sweep 1.1s var(--ease-out) infinite;
+}
+.btn[data-state='success'] {
+  pointer-events: none;
+}
+.btn[data-state='success'] > * {
+  visibility: hidden;
+}
+.btn[data-state='success']::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 10px;
+  border: solid currentColor;
+  border-width: 0 0 2.5px 2.5px;
+  transform: translateY(-2px) rotate(-45deg);
+  animation: btn-check var(--dur-3) var(--ease-out) both;
+}
+@keyframes btn-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes btn-check {
+  from {
+    opacity: 0;
+    transform: translateY(-2px) rotate(-45deg) scale(0.6);
+  }
+}
+.btn__reason {
+  margin: 6px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--muted);
+  text-align: center;
 }
 
 .btn--ghost {
   border: 1px solid var(--stroke-2);
   background: rgba(255, 255, 255, 0.04);
+}
+.btn--ghost:active {
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .btn--block {
@@ -840,7 +976,7 @@ input {
   line-height: 17px;
   text-align: center;
   box-shadow: 0 0 0 2px #0d1114;
-  animation: badge-pop 0.5s var(--ease-spring);
+  animation: badge-pop 0.5s var(--ease-out);
 }
 @keyframes badge-pop {
   0% {
@@ -1306,7 +1442,7 @@ input {
   -webkit-backdrop-filter: blur(14px);
   font-size: 13.5px;
   overflow: hidden;
-  animation: toast-in 0.5s var(--ease-spring) both;
+  animation: toast-in 0.5s var(--ease-out) both;
 }
 .toast::before {
   content: '';
@@ -1365,7 +1501,7 @@ input {
 }
 .toast--win::before {
   background-color: var(--lime);
-  animation: toast-trophy 0.9s var(--ease-spring) 0.15s both;
+  animation: toast-trophy 0.9s var(--ease-out) 0.15s both;
 }
 .toast--win strong {
   color: var(--lime);

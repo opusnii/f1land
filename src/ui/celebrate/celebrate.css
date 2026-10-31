@@ -170,7 +170,7 @@
   height: 112px;
   display: grid;
   place-items: center;
-  animation: cel-pop 0.75s var(--ease-spring) 0.12s both;
+  animation: cel-pop 0.75s var(--ease-out) 0.12s both;
 }
 .cel .cel__halo {
   position: absolute;
@@ -923,7 +923,7 @@
   fill: none;
 }
 .stk .stk__flame[data-pop] {
-  animation: stk-flare 0.9s var(--ease-spring) both;
+  animation: stk-flare 0.9s var(--ease-out) both;
 }
 
 .stk .stk__txt {
@@ -1036,7 +1036,7 @@
   background: repeating-conic-gradient(rgba(255, 255, 255, 0.18) 0 25%, transparent 0 50%) 0 0 / 7px 7px;
 }
 .stk .stk__day[data-just] {
-  animation: stk-pop 0.6s var(--ease-spring) both;
+  animation: stk-pop 0.6s var(--ease-out) both;
 }
 
 /* ---------- Claim row ---------- */

@@ -1,11 +1,11 @@
 // Overflow scan: clipped buttons/tabs/badges and content past the viewport, per route, at 320/360 RU+EN.
-// Usage: VITE_E2E=1 pnpm build && pnpm preview --port 4173 &; node dev/scan-overflow.mjs
+// Usage: VITE_E2E=1 pnpm build && pnpm preview --port 4173 &; node dev/scan-overflow.mjs [--url http://127.0.0.1:5173/]
 import { chromium } from '@playwright/test';
 const b = await chromium.launch({ executablePath: '/usr/local/bin/google-chrome', args: ['--no-sandbox'] });
 const routes = ['home', 'races', 'pools', 'profile', 'settings', 'wallet', 'leaderboard', 'history', 'rewards', 'session', 'meeting', 'circuit', 'driver'];
 for (const [w, lang] of [[320, 'ru'], [360, 'ru'], [360, 'en']]) {
   const page = await b.newPage({ viewport: { width: w, height: 720 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
-  await page.goto('http://127.0.0.1:4173/');
+  await page.goto(process.argv.includes('--url') ? process.argv[process.argv.indexOf('--url') + 1] : 'http://127.0.0.1:4173/');
   await page.evaluate((lang) => localStorage.setItem('pa-f1-settings', JSON.stringify({ state: { lang, quality: 'low', motion: 'reduced', haptics: false, sound: false, renderMode: '2d', camera: 'director', showZones: true, favoriteDriver: null, onboarded: true, reminderMin: 0 }, version: 1 })), lang);
   await page.reload();
   await page.waitForFunction(() => window.__live?.getState().runner?.ready && window.__live.getState().live, null, { timeout: 120000 });
