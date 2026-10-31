@@ -1,5 +1,5 @@
 // Full-app audit screenshots: every route at the given viewport, plus scroll-through frames.
-// Usage: node dev/shot-app.mjs --url http://127.0.0.1:4173/ --dir /tmp/shots --w 390 --h 844 [--lang ru|en] [--only home,pool:zone] [--scroll 2]
+// Usage: node dev/shot-app.mjs --url http://127.0.0.1:4173/ --dir /tmp/shots --w 390 --h 844 [--lang ru|en] [--only home,pool:zone] [--scroll 2] [--render 2d|3d] [--motion full|reduced]
 // Route specs: home races live pools profile leaderboard wallet settings history rewards meeting session circuit driver entry pool:<layout>
 import { chromium } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
@@ -30,9 +30,10 @@ page.on('pageerror', (e) => errs.push('pageerror: ' + e.message));
 page.on('console', (m) => m.type() === 'error' && errs.push('console: ' + m.text().slice(0, 300)));
 
 await page.goto(arg('url', 'http://127.0.0.1:4173/'));
-await page.evaluate((lang) => {
-  localStorage.setItem('pa-f1-settings', JSON.stringify({ state: { lang, quality: 'medium', motion: 'full', haptics: true, sound: false, renderMode: '3d', camera: 'director', showZones: true, favoriteDriver: null, onboarded: true, reminderMin: 0 }, version: 1 }));
-}, lang);
+// --render 2d skips WebGL (SwiftShader is slow); --motion reduced checks the reduced-motion path.
+await page.evaluate(({ lang, renderMode, motion }) => {
+  localStorage.setItem('pa-f1-settings', JSON.stringify({ state: { lang, quality: 'medium', motion, haptics: true, sound: false, renderMode, camera: 'director', showZones: true, favoriteDriver: null, onboarded: true, reminderMin: 0 }, version: 1 }));
+}, { lang, renderMode: arg('render', '3d'), motion: arg('motion', 'full') });
 await page.reload();
 await page.waitForFunction(() => window.__nav && window.__live?.getState().runner?.ready, null, { timeout: 120000 }).catch(() => errs.push('runner not ready'));
 const ch = arg('channel');
