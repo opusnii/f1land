@@ -125,7 +125,7 @@
   bottom: 10px;
   left: 14px;
   min-height: 0;
-  max-width: 56%;
+  max-width: 60%;
   padding: 0;
   background: none;
   -webkit-backdrop-filter: none;
@@ -138,14 +138,14 @@
 .pl-hero--pit .pl-hero__tag {
   right: 14px;
   bottom: 8px;
-  max-width: 42%;
+  max-width: 38%;
   font-size: 19px;
 }
 
 /* Track layer: between the top chips and the bottom text row */
 .pl-hero__track {
   position: absolute;
-  inset: 38px 0 46px;
+  inset: 34px 0 42px;
 }
 .pl-hero__track > svg {
   display: block;

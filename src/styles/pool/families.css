@@ -810,6 +810,19 @@
   font-size: var(--fs-lg);
   font-weight: 600;
 }
+.pace2:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+/* Session-wide pools (no driver): the references span the panel */
+.pace2__refs:only-child {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+  padding-left: 0;
+  border-left: 0;
+}
 .pace2__refs dd.pace2__who {
   color: var(--text-2);
   font-family: var(--font);
