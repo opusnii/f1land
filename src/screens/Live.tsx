@@ -1,24 +1,26 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useLive, onMoment } from '@/store/live';
-import { useSettings, prefersReducedMotion } from '@/store/settings';
+import { useLive } from '@/store/live';
+import { useSettings, prefersReducedMotion, resolveQuality } from '@/store/settings';
 import { usePools } from '@/demo/poolEngine';
 import { useWallet } from '@/store/wallet';
 import { CHANNELS } from '@/demo/channels';
 import { CIRCUIT_META } from '@/data/circuits';
 import { DRIVER_BY_ID, TEAM_BY_ID } from '@/data/teams';
-import type { LiveState, Moment } from '@/sim/types';
+import type { LiveState } from '@/sim/types';
 import type { CameraMode } from '@/three/engine/cameraRig';
-import { flagEmoji, fmtCountdown, getLang, t } from '@/i18n/core';
-import { useSceneView, getScene, webglAvailable } from '@/app/SceneHost';
+import { fmtCountdown, getLang, t } from '@/i18n/core';
+import { useSceneView, getScene, webglAvailable, chooseLiveRender, useRenderMode } from '@/app/SceneHost';
 import { DriverAvatar, Segmented, Sheet } from '@/ui/kit';
+import { Flag } from '@/ui/Obj';
 import { Toggle } from './common';
 import type { RenderMode } from '@/store/settings';
 import { IconEye, IconFast, IconPause, IconPlay, IconSettings, IconWarning, IconChevron } from '@/ui/icons';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { DragSheet, type Snap } from '@/ui/bet/DragSheet';
-import { Charts, EventsFeed, FollowCard, MomentIcon, MOMENT_TONE, MyEntries, PoolsTab, TimingTable, TowerStrip, momentText } from '@/ui/bet/livePanels';
+import { Charts, EventsFeed, FollowCard, MyEntries, PoolsTab, TimingTable, TowerStrip } from '@/ui/bet/livePanels';
+import { FlagPass, MomentBanner, MomentStack, useMomentFeed } from '@/ui/live/Moments';
 import { CAMERA_ICON, FlagGlyph, IcChart, IcChat, IcCloud, IcList, IcRain, IcSun, IcTicket, IcTrophy, RcBadge } from '@/ui/bet/icons';
 import '@/styles/live.css';
 
@@ -72,6 +74,13 @@ export function LiveScreen() {
   useEffect(() => {
     if (!runner && !loading) void open(channelId, mode);
   }, [runner, loading, channelId, mode, open]);
+
+  useMomentFeed();
+  const showResults = useCallback(() => {
+    haptic.tap();
+    setTab('timing');
+    setSnap('half');
+  }, []);
 
   useEffect(() => {
     setSceneView({ layout: 'full', zone: null, frameZone: false, labels: [], cameraOverride: null, frozen: false });
@@ -147,7 +156,9 @@ export function LiveScreen() {
           }}
           aria-label={t('home.channels')}
         >
-          <span className="lv-session__flag">{flagEmoji(meta?.countryCode ?? '')}</span>
+          <span className="lv-session__flag">
+            <Flag cc={meta?.countryCode} size={22} />
+          </span>
           <span className="lv-session__text">
             <span className="lv-session__title">
               <span className="ellipsis">{channel.title[lang]}</span>
@@ -239,11 +250,14 @@ export function LiveScreen() {
         </div>
       )}
 
+      <MomentBanner />
+
       {live && <StartLights lights={live.lights} />}
+      <FlagPass />
 
       {/* Overlays stacked above the sheet: moments → replay → followed driver */}
       <div ref={aboveRef} className="lv-above">
-        <MomentStack />
+        <MomentStack onResults={showResults} />
         {mode === 'replay' && runner && <ReplayBar />}
         {follow && live && <FollowCard car={follow} cars={live.cars} quali={isQuali} onOpen={() => (haptic.tap(), setDriverPicker(true))} />}
       </div>
@@ -302,7 +316,9 @@ export function LiveScreen() {
             const active = ch.id === channelId;
             return (
               <div key={ch.id} className={`lv-ch ${active ? 'lv-ch--on' : ''}`}>
-                <span className="lv-ch__flag">{flagEmoji(m?.countryCode ?? '')}</span>
+                <span className="lv-ch__flag">
+                  <Flag cc={m?.countryCode} size={22} />
+                </span>
                 <div className="lv-ch__text">
                   <div className="lv-ch__title ellipsis">{ch.title[lang]}</div>
                   <div className="lv-ch__sub ellipsis">
@@ -409,7 +425,8 @@ function flagItems(live: LiveState): Array<{ key: string; tone: 'sc' | 'red' | '
 /** Everything about how the race is shown lives in one sheet behind the header's view button. */
 function ViewSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const camera = useSettings((s) => s.camera);
-  const renderMode = useSettings((s) => s.renderMode);
+  const quality = useSettings((s) => s.quality);
+  const renderMode = useRenderMode('full');
   const showZones = useSettings((s) => s.showZones);
   const setSettings = useSettings((s) => s.set);
   const webglLost = useSceneView((s) => s.webglLost);
@@ -419,15 +436,16 @@ function ViewSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
       <div className="lv-view">
         {can3d && (
           <Segmented<RenderMode>
-            label={t('lv.view.title')}
+            label={t('hl.view.mode')}
             value={renderMode}
-            onChange={(v) => setSettings({ renderMode: v })}
+            onChange={(v) => chooseLiveRender(v)}
             options={[
               { id: '3d', label: t('live.view3d') },
-              { id: '2d', label: t('live.view2d') },
+              { id: '2d', label: t('hl.view.art') },
             ]}
           />
         )}
+        {can3d && renderMode === '2d' && resolveQuality(quality) === 'low' && <p className="lv-view__hint">{t('hl.view.lowHint')}</p>}
         {can3d && renderMode === '3d' && (
           <section className="lv-view__sec">
             <h3 className="lv-view__h">{t('live.camera')}</h3>
@@ -508,54 +526,6 @@ function StartLights({ lights }: { lights: number | 'off' }) {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-const BIG_KINDS = new Set<Moment['kind']>(['SC', 'VSC', 'RED', 'FINISH']);
-
-function MomentStack() {
-  const [items, setItems] = useState<Array<Moment & { big: boolean }>>([]);
-  const battles = useRef(0);
-  useEffect(
-    () =>
-      onMoment((m) => {
-        const { followId, rivalId } = useLive.getState();
-        const involved = m.drivers.some((d) => d === followId || d === rivalId);
-        if (m.kind === 'BATTLE' && !involved && battles.current++ % 2 === 1) return;
-        if (m.kind === 'TRACK_LIMITS' && !involved) return;
-        const big = (m.kind === 'OVERTAKE' && involved) || BIG_KINDS.has(m.kind);
-        if (m.kind === 'OVERTAKE' && involved) haptic.impact('medium');
-        else if (m.kind === 'SC' || m.kind === 'VSC' || m.kind === 'RED') {
-          haptic.notify('warning');
-          sfx.warn();
-        } else if ((m.kind === 'FASTEST_LAP' || m.kind === 'PIT') && involved) haptic.impact('light');
-        // One moment at a time: a new one replaces the previous.
-        setItems([{ ...m, big }]);
-        setTimeout(() => setItems((x) => x.filter((i) => i.id !== m.id)), big ? 4200 : 3200);
-      }),
-    [],
-  );
-  return (
-    <div className="lv-moments" aria-live="polite">
-      <AnimatePresence initial={false} mode="popLayout">
-        {items.map((m) => (
-          <motion.div
-            key={m.id}
-            className={`lv-moment ${m.big ? 'lv-moment--big' : ''} lv-moment--${m.kind.toLowerCase()}`}
-            style={{ ['--tone' as string]: MOMENT_TONE[m.kind] ?? 'var(--text-2)' }}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="lv-moment__icon">
-              <MomentIcon kind={m.kind} size={16} />
-            </span>
-            <span className="lv-moment__text">{momentText(m)}</span>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
   );
 }
 

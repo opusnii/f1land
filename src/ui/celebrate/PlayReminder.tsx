@@ -8,7 +8,7 @@ import { fmtDuration, fmtNumber, t } from '@/i18n/core';
 import { haptic, insideTelegram, tg } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { signed, useReduced } from '@/screens/common';
-import { IconTimer } from '@/ui/icons';
+import { Obj } from '@/ui/Obj';
 import { useCelebrate } from './store';
 import { ActiveClock } from './activeTime';
 import { useModalFocus } from './hooks';
@@ -115,17 +115,15 @@ function ReminderModal({ data, onKeep }: { data: Recap; onKeep: () => void }) {
       transition={{ duration: reduced ? 0.15 : 0.22 }}
       onKeyDown={onKeyDown}
     >
-      <div className="rem__scrim" />
+      <div className="rem__scrim" onClick={onKeep} />
       <motion.div
         className="rem__card"
-        initial={reduced ? false : { y: 24, scale: 0.96 }}
-        animate={{ y: 0, scale: 1 }}
-        exit={reduced ? undefined : { y: 16, scale: 0.98, transition: { duration: 0.18, ease: 'easeIn' } }}
-        transition={{ type: 'spring', stiffness: 360, damping: 32 }}
+        initial={reduced ? false : { y: 20 }}
+        animate={{ y: 0 }}
+        exit={reduced ? undefined : { y: 12, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } }}
+        transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
       >
-        <span className="rem__ic" aria-hidden="true">
-          <IconTimer size={28} />
-        </span>
+        <Obj name="stopwatch" size={72} className="rem__art" />
         <h2 id="rem-title" className="rem__title">
           {t('rem.title')}
         </h2>
