@@ -17,26 +17,28 @@
   display: none;
 }
 .sc-note {
-  font-size: 11.5px;
-  color: var(--muted);
+  max-width: 60%;
+  font-size: var(--fs-xs);
   font-weight: 600;
-  white-space: nowrap;
-  max-width: 55%;
+  color: var(--muted);
+  text-align: right;
 }
 .sc-fine {
-  font-size: 11.5px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: var(--sp-3) 2px 0;
+  font-size: var(--fs-xs);
   line-height: 1.45;
   color: var(--muted);
-  margin: 10px 2px 0;
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
+  text-wrap: pretty;
 }
 .sc-fine--note {
-  margin-top: 18px;
+  margin-top: var(--sp-4);
   padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px dashed var(--stroke-2);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
 }
 .sc-fine .icon {
   flex: none;
@@ -123,17 +125,18 @@
   height: 46px;
 }
 
-/* Icon tiles */
+/* Icon tiles: neutral S2; colour belongs to the data, not to the tile. */
 .sc-ic {
   --c: var(--text-2);
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   flex: none;
-  border-radius: 10px;
   display: grid;
   place-items: center;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
   color: var(--c);
-  background: rgba(255, 255, 255, 0.06);
 }
 
 /* Status pills */
@@ -143,10 +146,11 @@
   gap: 6px;
   height: 22px;
   padding: 0 8px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--r-chip);
+  background: var(--s2);
+  box-shadow: var(--rim);
   color: var(--text-2);
-  font-size: 12px;
+  font-size: var(--fs-xs);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -160,17 +164,17 @@
 .sc-pill--upcoming { color: var(--text-2); }
 .sc-pill--sprint { color: var(--purple); }
 .sc-pill--fl { color: var(--purple); height: 18px; padding: 0 5px; }
-.sc-pill--demo { color: var(--muted); }
+.sc-pill--demo { color: var(--text-2); letter-spacing: 0.02em; }
 
 /* Progress bar */
 .sc-bar {
   --c: var(--lime);
   position: relative;
+  flex: 1;
   height: 6px;
-  border-radius: 6px;
+  border-radius: 3px;
   background: rgba(255, 255, 255, 0.07);
   overflow: hidden;
-  flex: 1;
 }
 .sc-bar[data-tone='cyan'] { --c: var(--cyan); }
 .sc-bar[data-tone='purple'] { --c: var(--purple); }
@@ -183,138 +187,153 @@
   border-radius: inherit;
   background: linear-gradient(90deg, color-mix(in srgb, var(--c) 55%, transparent), var(--c));
   transform-origin: left;
-  animation: sc-grow 0.9s var(--ease-out) both;
+  animation: sc-grow var(--dur-4) var(--ease-out) both;
 }
 @keyframes sc-grow {
   from { transform: scaleX(0); }
 }
 
-/* Toggle switch */
+/* Toggle switch (also used by the live "View" sheet) */
 .sc-toggle {
   position: relative;
-  width: 50px;
-  height: 30px;
+  width: 52px;
+  height: 32px;
   flex: none;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid var(--stroke-2);
-  transition: background 0.22s, border-color 0.22s, box-shadow 0.22s;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: var(--rim);
+  transition: background-color var(--dur-2) var(--ease-out);
 }
 .sc-toggle::after {
   content: '';
   position: absolute;
-  inset: -8px -2px;
+  inset: -6px -2px;
+}
+.sc-toggle:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 3px;
 }
 .sc-toggle__knob {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: #cfd6db;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-  transition: transform 0.26s var(--ease-out), background 0.2s;
+  background: #d5dce1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: transform var(--dur-2) var(--ease-out), background-color var(--dur-2);
 }
 .sc-toggle[data-on='true'] {
-  background: rgba(198, 255, 61, 0.22);
-  border-color: rgba(198, 255, 61, 0.6);
+  background: linear-gradient(180deg, var(--lime-hi), var(--lime-lo));
 }
 .sc-toggle[data-on='true'] .sc-toggle__knob {
   transform: translateX(20px);
-  background: var(--lime);
+  background: #0b1200;
 }
 
 /* Menu rows */
 .sc-menu-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--stroke);
-  border-radius: var(--radius);
-  background: var(--panel-solid);
+  border-radius: var(--r-card);
+  background: var(--s1);
+  border: 1px solid var(--s1-stroke);
+  box-shadow: var(--rim);
   overflow: hidden;
 }
 .sc-menu {
   width: 100%;
-  min-height: 60px;
+  min-height: 64px;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 10px 14px 10px 12px;
   text-align: left;
+  transition: background-color var(--dur-1);
 }
 .sc-menu + .sc-menu {
   border-top: 1px solid var(--stroke);
 }
 .sc-menu:active {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
+}
+.sc-menu:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: -2px;
+}
+.sc-menu__art {
+  flex: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
 }
 .sc-menu__txt {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 .sc-menu__t {
+  font-size: var(--fs-md);
   font-weight: 600;
-  font-size: 15px;
 }
 .sc-menu__s {
-  font-size: 12px;
+  font-size: var(--fs-xs);
+  line-height: 1.35;
   color: var(--muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .sc-menu__v {
-  font-weight: 700;
+  flex: none;
+  font-weight: 600;
   color: var(--text-2);
 }
 .sc-menu__chev {
-  color: var(--muted);
   flex: none;
+  color: var(--muted);
 }
 .sc-dotbadge {
   min-width: 22px;
   height: 22px;
   padding: 0 6px;
-  border-radius: 11px;
   display: grid;
   place-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #0b1200;
+  border-radius: 11px;
   background: var(--lime);
+  color: #0b1200;
+  font-size: var(--fs-xs);
+  font-weight: 700;
 }
 
-/* Empty state */
+/* Empty state (line-icon variant; screens with art use <EmptyState>) */
 .sc-empty {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-align: center;
-  padding: 18px 8px 10px;
   gap: 6px;
+  padding: var(--sp-4) var(--sp-2) var(--sp-3);
+  text-align: center;
 }
 .sc-empty__ic {
   width: 52px;
   height: 52px;
-  border-radius: 16px;
+  margin-bottom: 4px;
   display: grid;
   place-items: center;
-  color: var(--lime);
-  background: rgba(198, 255, 61, 0.08);
-  border: 1px solid rgba(198, 255, 61, 0.2);
-  margin-bottom: 4px;
+  border-radius: var(--r-card);
+  background: var(--s2);
+  box-shadow: var(--rim);
+  color: var(--text-2);
 }
 .sc-empty__t {
+  font-size: var(--fs-md);
   font-weight: 700;
-  font-size: 15px;
+  text-wrap: balance;
 }
 .sc-empty__b {
-  font-size: 13px;
+  max-width: 30ch;
+  font-size: var(--fs-sm);
   color: var(--text-2);
-  max-width: 290px;
+  text-wrap: pretty;
 }
 
 /* Circuit thumbnails */
@@ -324,13 +343,13 @@
 }
 .sc-thumb__base {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.05);
+  stroke: rgba(255, 255, 255, 0.06);
   stroke-width: 7;
   stroke-linejoin: round;
 }
 .sc-thumb__line {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.62);
+  stroke: rgba(255, 255, 255, 0.66);
   stroke-width: 2.4;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -347,6 +366,4 @@
   fill: #fff;
   stroke: var(--bg);
   stroke-width: 1.5;
-}
-.sc-thumb__car {
 }
