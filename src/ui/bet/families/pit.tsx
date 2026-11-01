@@ -56,7 +56,7 @@ export function PitInfo({ pool, car, focus, cars }: { pool: Pool; car?: LiveCar;
       {car && m !== 'F1-M03' && <DriverStrip id={car.id} sub={`${teamShort(car.id)} · P${car.position} · ${t('pv2.stops', { n: car.pitStops })}`} right={<TyreCell c={car} />} />}
       {cands.length > 0 && (
         <div className="pv-list">
-          <span className="techlabel">{t('pl.pitCandidates')}</span>
+          <span className="pv-label">{t('pl.pitCandidates')}</span>
           {cands.map((c) => (
             <div key={c.id} className="pv-row" style={{ '--team': teamColorOf(c.id) } as CSSProperties}>
               <Helmet driverId={c.id} size={30} decorative />

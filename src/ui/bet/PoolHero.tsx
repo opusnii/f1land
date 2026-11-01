@@ -14,6 +14,7 @@ import { TrackMap, type MapCar } from '@/ui/TrackMap';
 import { IconLayers, IconMap } from '@/ui/icons';
 import { haptic } from '@/telegram/sdk';
 import { sectorKm, useBoxSize } from './viz';
+import '@/styles/pool/hero.css';
 
 const TRACK_FAMILIES = new Set<PoolLayout>(['zone', 'pit', 'position']);
 const TAGLINE: Partial<Record<PoolLayout, string>> = { zone: 'tag.zone', incident: 'tag.incident' };

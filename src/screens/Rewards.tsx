@@ -18,6 +18,7 @@ import { sfx } from '@/audio/sfx';
 import { Bar, PageHead, Reveal, useBack, useReduced } from './common';
 import { AchievementSheet, AchievementsGrid } from './Profile';
 import { StreakCard } from '@/ui/celebrate/StreakCard';
+import '@/styles/screens/rewards.css';
 
 function MissionRow({ m, claimed, onClaim }: { m: MissionState; claimed: boolean; onClaim: (from: Element) => void }) {
   const name = t(`scr.ms.${m.def.id}`);

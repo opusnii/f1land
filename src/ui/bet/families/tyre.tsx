@@ -79,8 +79,8 @@ export function TyreInfo({ car, cars, totalLaps }: { car: LiveCar; cars: LiveCar
       </div>
       {series.length ? (
         <div className="tyreinfo__chart">
+          <p className="pv-axis">{t('pv2.degY')}</p>
           <LineChart series={series} height={150} yLabel={t('pv2.degY')} xLabel={t('pv2.degX')} xStart={1} yFormat={(v) => (v < 0 ? `−${fmtNumber(-v, 1)}` : `+${fmtNumber(v, 1)}`)} />
-          <p className="pv-axis">{t('pv2.degX')}</p>
         </div>
       ) : (
         <p className="pv-empty">{t('pv2.degFew')}</p>

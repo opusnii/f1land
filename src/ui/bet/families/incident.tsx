@@ -58,7 +58,7 @@ export function IncidentInfo() {
           </span>
         )}
       </div>
-      <span className="techlabel">{t('pv2.rcLog')}</span>
+      <span className="pv-label">{t('pv2.rcLog')}</span>
       <EventTimeline items={items} empty={t('pv2.noIncidents')} />
     </InfoCard>
   );

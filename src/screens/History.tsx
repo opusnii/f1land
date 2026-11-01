@@ -12,6 +12,7 @@ import { MechIcon } from '@/ui/profile/objects';
 import { IconChevron, IconPlay } from '@/ui/icons';
 import { fmtClock, fmtNumber, getLang, t } from '@/i18n/core';
 import { EntryBadge, PageHead, Reveal, groupByDay, signed, useBack } from './common';
+import '@/styles/screens/history.css';
 
 type F = 'all' | EntryState;
 
@@ -137,7 +138,7 @@ function HistoryRow({ e, onOpen }: { e: Entry; onOpen: () => void }) {
       <span className="hs-row__foot">
         <span className="hs-row__pick">
           <i>{t('entries.yourPick')}</i>
-          <b className="ellipsis">{e.outcomeLabel}</b>
+          <b>{e.outcomeLabel}</b>
         </span>
         <span className="hs-row__num">
           <i>{t('entries.stake')}</i>

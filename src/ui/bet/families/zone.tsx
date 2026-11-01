@@ -1,5 +1,5 @@
 /* Zone (F1-M11): the followed driver — helmet, "P6 · +4.2", where they are now, and a switch to another driver's zone pool. */
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useNav } from '@/store/nav';
 import { useLive } from '@/store/live';
 import { usePools } from '@/demo/poolEngine';
@@ -37,20 +37,34 @@ export function ZoneInfo({ car, poolId }: { car: LiveCar; poolId: string }) {
           </button>
         }
       />
-      <dl className="pv-stats">
-        <div>
-          <dt>{t('pv2.posNow')}</dt>
-          <dd className="num">P{car.position}</dd>
+      <div className="zinfo__now">
+        <p className="zinfo__pos">
+          <b className="num">P{car.position}</b>
+          <small>
+            {car.position === 1 ? (
+              t('pv2.leader')
+            ) : (
+              <>
+                <span className="num">
+                  {fmtGap(car.gapMs, 1)} {t('pl.unit.s')}
+                </span>{' '}
+                {t('pv2.toLeader')}
+              </>
+            )}
+          </small>
+        </p>
+        <div className="zinfo__where">
+          <small>{t('pv2.whereNow')}</small>
+          <ol className="zinfo__secs" role="img" aria-label={`${t('pv2.whereNow')}: ${where}`}>
+            {([1, 2, 3] as const).map((s) => (
+              <li key={s} className={onTrack && car.sector === s ? 'is-on' : ''} style={{ '--zc': SECTOR_COLORS[s - 1] } as CSSProperties}>
+                <span className="techlabel">S{s}</span>
+              </li>
+            ))}
+          </ol>
+          {!onTrack && <span className="zinfo__occ">{where}</span>}
         </div>
-        <div>
-          <dt>{t('pv2.toLeader')}</dt>
-          <dd className="num">{car.position === 1 ? t('pv2.leader') : `${fmtGap(car.gapMs, 1)} ${t('pl.unit.s')}`}</dd>
-        </div>
-        <div>
-          <dt>{t('pl.now')}</dt>
-          <dd style={{ color: onTrack ? SECTOR_COLORS[car.sector - 1] : 'var(--cyan)' }}>{where}</dd>
-        </div>
-      </dl>
+      </div>
       <OtherZonePools open={open} onClose={() => setOpen(false)} current={poolId} />
     </InfoCard>
   );

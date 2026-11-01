@@ -54,7 +54,7 @@ export function PaceInfo({ pool, car }: { pool: Pool; car?: LiveCar }) {
 
       {car && m !== 'F1-M09' && (
         <>
-          <span className="techlabel">{t('pv2.recentLaps')}</span>
+          <span className="pv-label">{t('pv2.recentLaps')}</span>
           {laps.length === 0 ? (
             <p className="pv-empty">{t('pv2.noLaps')}</p>
           ) : (
@@ -96,7 +96,7 @@ export function PaceInfo({ pool, car }: { pool: Pool; car?: LiveCar }) {
 
       {m === 'F1-M09' && top.length > 0 && (
         <div className="pv-list">
-          <span className="techlabel">{t('pl.bestLaps')}</span>
+          <span className="pv-label">{t('pl.bestLaps')}</span>
           {top.map((c, i) => (
             <div key={c.id} className="pv-row" style={{ '--team': teamColorOf(c.id) } as CSSProperties}>
               <span className="pv-row__n num">{i + 1}</span>

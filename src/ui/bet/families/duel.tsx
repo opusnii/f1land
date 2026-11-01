@@ -6,7 +6,7 @@ import { t } from '@/i18n/core';
 import { Helmet } from '@/ui/Helmet';
 import { CarArt, Obj } from '@/ui/Obj';
 import type { LiveCar } from '@/sim/types';
-import { GapMeter, tyreObj, useGapTrend } from '../viz';
+import { GapMeter, teamColorOf, tyreObj, useGapTrend } from '../viz';
 
 export function DuelInfo({ a, b, ca, cb, quali }: { a: string; b: string; ca?: LiveCar; cb?: LiveCar; quali: boolean }) {
   // Race: difference of gaps to the leader (A minus B, so negative = A ahead). Quali: best-lap delta.
@@ -57,7 +57,7 @@ export function DuelInfo({ a, b, ca, cb, quali }: { a: string; b: string; ca?: L
           );
         })}
       </div>
-      <div className="duel2__stage">
+      <div className="duel2__stage" style={{ '--ta': teamColorOf(a), '--tb': teamColorOf(b) } as CSSProperties}>
         <div className="duel2__cars" aria-hidden="true">
           <CarArt team={teamA} width={164} mirror className="duel2__car duel2__car--a" />
           <CarArt team={teamB} width={164} className="duel2__car duel2__car--b" />

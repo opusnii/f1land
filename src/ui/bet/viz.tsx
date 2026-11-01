@@ -7,6 +7,7 @@ import { DRIVER_BY_ID, TEAM_BY_ID } from '@/data/teams';
 import { fmtSec, t } from '@/i18n/core';
 import { Obj } from '@/ui/Obj';
 import { SECTOR_COLORS } from '@/ui/TrackMap';
+import '@/styles/pool/viz.css';
 
 export const teamColorOf = (driverId?: string | null): string => (driverId ? (TEAM_BY_ID[DRIVER_BY_ID[driverId]?.teamId ?? '']?.color ?? '#7d8a93') : '#7d8a93');
 export const COMPOUND_COLOR: Record<string, string> = { SOFT: 'var(--soft)', MEDIUM: 'var(--medium)', HARD: 'var(--hard)', INTERMEDIATE: 'var(--inter)', WET: 'var(--wet)' };

@@ -10,6 +10,7 @@ import { t, type Lang } from '@/i18n/core';
 import { haptic, insideTelegram, setHapticsEnabled } from '@/telegram/sdk';
 import { setSoundEnabled, sfx } from '@/audio/sfx';
 import { PageHead, PortalSheet, Reveal, Toggle, useBack } from './common';
+import '@/styles/screens/settings.css';
 
 /** Applies persisted preferences to the haptics/sfx modules and the motion CSS hooks. */
 export function useApplySettings(): void {

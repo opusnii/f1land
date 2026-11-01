@@ -8,6 +8,7 @@ import { t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { useReduced } from './common';
+import '@/styles/screens/onboarding.css';
 
 /** Three full-screen art slides (spec §9.6). Focal points keep each subject clear of the bottom copy. */
 const SLIDES = [

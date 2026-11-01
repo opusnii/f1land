@@ -1,0 +1,197 @@
+/* History: summary, wrapping filter chips, day groups of ticket-like rows. */
+
+.hs-sum {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: var(--sp-4);
+}
+.hs-sum > div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--sp-3) var(--sp-1);
+  text-align: center;
+}
+.hs-sum > div + div {
+  border-left: 1px solid var(--stroke);
+}
+.hs-sum b {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.hs-sum span {
+  max-width: 100%;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+/* Chips wrap; each keeps a 44 px hit area without growing visually. */
+.hs-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  margin: var(--sp-4) 0 var(--sp-2);
+}
+.hs-chips .chip {
+  position: relative;
+  height: 36px;
+  border-radius: var(--r-chip);
+}
+.hs-chips .chip::after {
+  content: '';
+  position: absolute;
+  inset: -4px 0;
+}
+.hs-chips__n {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  text-align: center;
+}
+.hs-chips .chip[aria-pressed='true'] .hs-chips__n {
+  background: rgba(198, 255, 61, 0.16);
+  color: var(--lime);
+}
+
+.hs-group {
+  margin-top: var(--sp-4);
+}
+.hs-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Row: mechanic + family + state · question · meeting · pick / stake / result */
+.hs-row {
+  --tone: var(--cyan);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4) var(--sp-3) var(--sp-4);
+  color: var(--text);
+  text-align: left;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+.hs-row:active {
+  transform: scale(0.99);
+}
+.hs-row:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.hs-row::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--sp-4);
+  width: 3px;
+  height: 28px;
+  border-radius: 0 3px 3px 0;
+  background: var(--tone);
+}
+.hs-row[data-state='WON'] {
+  --tone: var(--lime);
+}
+.hs-row[data-state='LOST'] {
+  --tone: #ff6b74;
+}
+.hs-row[data-state='VOID'] {
+  --tone: var(--yellow);
+}
+.hs-row__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.hs-row__mech {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--r-chip);
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  color: var(--tone);
+}
+.hs-row__fam {
+  flex: 1;
+  min-width: 0;
+  color: var(--tone);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.hs-row__top .badge {
+  flex: none;
+}
+.hs-row__q {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+.hs-row__meet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.hs-row__meet .num {
+  flex: none;
+  white-space: nowrap;
+}
+.hs-row__foot {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto 14px;
+  align-items: end;
+  gap: var(--sp-3);
+  margin-top: var(--sp-1);
+  padding-top: var(--sp-2);
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+.hs-row__foot > .icon {
+  align-self: center;
+}
+.hs-row__pick,
+.hs-row__num {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.hs-row__num {
+  align-items: flex-end;
+  text-align: right;
+}
+.hs-row__pick i,
+.hs-row__num i {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-style: normal;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hs-row__pick b {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.hs-row__num b {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  white-space: nowrap;
+}
