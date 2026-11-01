@@ -225,6 +225,52 @@ function teamColor(id: string): string {
   return d ? TEAM_BY_ID[d.teamId]!.color : '#fff';
 }
 
+interface PlacedCar {
+  c: MapCar;
+  x: number;
+  y: number;
+  tag: string;
+  tw: number;
+  /** Tag offset relative to the car. */
+  tx: number;
+  ty: number;
+}
+
+/**
+ * Tag placement without overlaps: followed car first, then rival, then the rest; each tag tries
+ * above-right, above-left, below-right, below-left and keeps the first free slot inside the viewBox.
+ */
+function placeTags(cars: MapCar[], project: (x: number, y: number) => Vec2, width: number, height: number): PlacedCar[] {
+  const rank = (c: MapCar) => (c.kind === 'follow' ? 0 : c.kind === 'rival' ? 1 : c.kind === 'near' ? 2 : 3);
+  const order = [...cars].sort((a, b) => rank(a) - rank(b));
+  const boxes: Array<{ x: number; y: number; w: number; h: number }> = [];
+  const out: PlacedCar[] = [];
+  for (const c of order) {
+    const [x, y] = project(c.x, c.y);
+    const d = DRIVER_BY_ID[c.id];
+    const tag = c.tag ?? (c.kind === 'follow' || c.kind === 'rival' || c.kind === 'near' ? `${c.position ? `P${c.position} ` : ''}${d?.code ?? ''}` : '');
+    const tw = tag ? textW(tag, 8.5) : 0;
+    let tx = 10;
+    let ty = -16;
+    if (tag) {
+      const slots: Array<[number, number]> = [
+        [10, -16],
+        [-10 - tw, -16],
+        [10, 4],
+        [-10 - tw, 4],
+      ];
+      const fits = ([ox, oy]: [number, number]) => x + ox >= 1 && x + ox + tw <= width - 1 && y + oy >= 1 && y + oy + 14 <= height - 1;
+      const free = ([ox, oy]: [number, number]) => !boxes.some((b) => x + ox < b.x + b.w && b.x < x + ox + tw && y + oy < b.y + b.h && b.y < y + oy + 14);
+      const pick = slots.find((s) => fits(s) && free(s)) ?? slots.find(fits) ?? slots[0]!;
+      [tx, ty] = pick;
+      boxes.push({ x: x + tx - 2, y: y + ty - 2, w: tw + 4, h: 18 });
+    }
+    out.push({ c, x, y, tag, tw, tx, ty });
+  }
+  // Draw lower-priority cars first so the followed car and its tag sit on top.
+  return out.reverse();
+}
+
 /** Approximate glyph width for 9 px Onest/Chakra labels inside the viewBox. */
 const textW = (s: string, fs: number) => s.length * fs * 0.62 + 12;
 
@@ -255,17 +301,8 @@ function NeonTrack({
   const startAng = (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
 
   // Car tag boxes (absolute coords) so sector callouts can step out of their way.
-  const tagBoxes = cars
-    .filter((c) => c.tag || c.kind === 'follow' || c.kind === 'rival' || c.kind === 'near')
-    .map((c) => {
-      const [x, y] = p.project(c.x, c.y);
-      const d = DRIVER_BY_ID[c.id];
-      const tag = c.tag ?? `${c.position ? `P${c.position} ` : ''}${d?.code ?? ''}`;
-      const tw = textW(tag, 8.5);
-      const tx = x + 10 + tw > width - 2 ? x - 10 - tw : x + 10;
-      const ty = y < 16 ? y + 6 : y - 16;
-      return { x: tx - 12, y: ty - 4, w: tw + 24, h: 22 };
-    });
+  const placed = placeTags(cars, p.project, width, height);
+  const tagBoxes = placed.filter((pc) => pc.tag).map((pc) => ({ x: pc.x + pc.tx - 12, y: pc.y + pc.ty - 4, w: pc.tw + 24, h: 22 }));
   const tagKey = tagBoxes.map((b) => `${b.x | 0},${b.y | 0}`).join(';');
 
   const callouts = useMemo(() => {
@@ -379,15 +416,9 @@ function NeonTrack({
           </g>
         );
       })}
-      {cars.map((c) => {
-        const [x, y] = p.project(c.x, c.y);
-        const d = DRIVER_BY_ID[c.id];
+      {placed.map(({ c, x, y, tag, tw, tx, ty }) => {
         const color = teamColor(c.id);
         const big = c.kind === 'follow' || c.kind === 'rival';
-        const tag = c.tag ?? (big || c.kind === 'near' ? `${c.position ? `P${c.position} ` : ''}${d?.code ?? ''}` : '');
-        const tw = tag ? textW(tag, 8.5) : 0;
-        const tx = x + 10 + tw > width - 2 ? -10 - tw : 10;
-        const ty = y < 16 ? 6 : -16;
         const ring = c.kind === 'follow' ? 'var(--lime)' : c.kind === 'rival' ? 'var(--cyan)' : null;
         return (
           <g key={c.id} className="trackmap__dot" transform={`translate(${x.toFixed(1)},${y.toFixed(1)})`} opacity={stale ? 0.5 : 1}>

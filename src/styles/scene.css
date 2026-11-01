@@ -59,8 +59,9 @@
 .scene-art__approx {
   position: absolute;
   z-index: 2;
-  left: 14px;
-  bottom: 80px;
+  /* Top-right, clear of the moments stack and the follow card at the bottom. */
+  right: 14px;
+  top: calc(var(--safe-top) + 112px);
   padding: 2px 8px;
   border-radius: 6px;
   background: rgba(7, 9, 11, 0.7);

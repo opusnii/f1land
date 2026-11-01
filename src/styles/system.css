@@ -4,7 +4,7 @@
 /* ------------------------------------------------------------------ */
 
 /* Art (S3) ----------------------------------------------------------- */
-.art {
+:where(.art) {
   position: relative;
   overflow: hidden;
   background: var(--art-c, #10161a);
@@ -51,7 +51,7 @@
 }
 
 /* Hero plate --------------------------------------------------------- */
-.hero-plate {
+:where(.hero-plate) {
   position: relative;
   border-radius: var(--r-hero);
   overflow: hidden;
@@ -80,7 +80,7 @@
 }
 
 /* Objects, cars, helmets, flags ------------------------------------- */
-.obj {
+:where(.obj) {
   display: inline-block;
   flex: none;
   line-height: 0;
@@ -92,7 +92,7 @@
   user-select: none;
   -webkit-user-drag: none;
 }
-.car-art {
+:where(.car-art) {
   display: block;
   flex: none;
   line-height: 0;
@@ -106,7 +106,7 @@
 .car-art--mirror img {
   transform: scaleX(-1);
 }
-.flag-img {
+:where(.flag-img) {
   display: inline-block;
   flex: none;
   vertical-align: -0.12em;
@@ -118,7 +118,7 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
-.helmet {
+:where(.helmet) {
   position: relative;
   display: inline-grid;
   place-items: center;
@@ -155,7 +155,7 @@
 }
 
 /* Display type ------------------------------------------------------- */
-.display-title {
+:where(.display-title) {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -184,7 +184,7 @@
   color: var(--lime);
 }
 
-.tagline {
+:where(.tagline) {
   margin: 0;
   font-family: var(--font-hand);
   font-weight: 600;
@@ -197,7 +197,7 @@
 }
 
 /* Technical label: only LIVE, LAP, SC/VSC, S1–S3, "Locks in", ticket field labels. */
-.techlabel {
+:where(.techlabel) {
   font-size: 11.5px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -206,7 +206,7 @@
 }
 
 /* Status chip -------------------------------------------------------- */
-.status-chip {
+:where(.status-chip) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -257,7 +257,7 @@
 }
 
 /* Lock timer --------------------------------------------------------- */
-.lock-timer {
+:where(.lock-timer) {
   --lt: var(--text-2);
   --lt-arc: var(--lime);
   display: inline-flex;
@@ -364,7 +364,7 @@
 }
 
 /* S2 tile ------------------------------------------------------------ */
-.tile {
+:where(.tile) {
   position: relative;
   border-radius: var(--r-tile);
   background: var(--s2);
@@ -384,7 +384,7 @@
 }
 
 /* Empty state -------------------------------------------------------- */
-.empty-state {
+:where(.empty-state) {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -448,7 +448,7 @@
 }
 
 /* Logo lockup -------------------------------------------------------- */
-.logo-lockup {
+:where(.logo-lockup) {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -474,7 +474,7 @@
 }
 
 /* Skeleton: one shape language, highlight sweep 1.2 s. */
-.skel {
+:where(.skel) {
   position: relative;
   overflow: hidden;
   border-radius: var(--r-tile);
