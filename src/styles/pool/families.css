@@ -585,16 +585,16 @@
     linear-gradient(180deg, #0f161a 0%, #0b1013 58%, #10171b 100%);
   box-shadow: var(--rim);
 }
-/* Asphalt + start line under the cars */
+/* Asphalt under the cars, faint team tint at each side */
 .duel2__stage::before {
   content: '';
   position: absolute;
   inset: auto 0 0;
-  height: 52%;
+  height: 50%;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
   background:
-    linear-gradient(90deg, color-mix(in srgb, var(--ta, transparent) 14%, transparent), transparent 40%, transparent 60%, color-mix(in srgb, var(--tb, transparent) 14%, transparent)),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.05) 0 18px, transparent 18px 40px) center 34% / 100% 2px no-repeat,
-    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.2));
+    linear-gradient(90deg, color-mix(in srgb, var(--ta, transparent) 9%, transparent), transparent 35%, transparent 65%, color-mix(in srgb, var(--tb, transparent) 9%, transparent)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.25));
   pointer-events: none;
 }
 .duel2__cars {
@@ -738,6 +738,36 @@
 .tyreinfo__chart .lc {
   margin: 0 calc(-1 * var(--sp-1));
 }
+.tyreinfo__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
+}
+.pv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+.pv-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pv-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.tyreinfo__foot .pv-axis {
+  margin: 0;
+}
 
 /* ---------- Pace: delta large, last five laps ---------- */
 .pace2 {
@@ -799,7 +829,7 @@
 }
 .lapbars__row {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) auto 52px;
+  grid-template-columns: 64px minmax(0, 1fr) 72px 52px;
   align-items: center;
   gap: var(--sp-2);
   min-height: 28px;
@@ -824,6 +854,7 @@
 .lapbars__t {
   color: var(--text);
   font-weight: 600;
+  text-align: right;
 }
 .lapbars__d {
   color: var(--text-2);
@@ -1052,7 +1083,21 @@
   grid-template-columns: 24px 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--sp-2) var(--sp-3);
-  min-height: 64px;
+  min-height: 68px;
+  padding: 10px var(--sp-3) 10px 0;
+}
+/* Leg tile behind icon · pick · status; the node stays on the rail */
+.combo2__leg::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 calc(24px + var(--sp-3) - 10px);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+}
+.combo2__leg > * {
+  position: relative;
+  z-index: 1;
 }
 .combo2__node {
   position: relative;
@@ -1191,12 +1236,16 @@
     font-size: var(--fs-2xl);
   }
   .lapbars__row {
-    grid-template-columns: 56px minmax(0, 1fr) auto 46px;
+    grid-template-columns: 54px minmax(0, 1fr) 68px 46px;
     gap: 6px;
   }
   .combo2__leg {
     grid-template-columns: 24px 40px minmax(0, 1fr) auto;
     gap: var(--sp-2);
+    padding-right: 10px;
+  }
+  .combo2__leg::after {
+    left: calc(24px + var(--sp-2) - 8px);
   }
   .combo2__ico {
     width: 40px;

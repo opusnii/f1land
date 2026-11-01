@@ -118,16 +118,34 @@
   transform-origin: right bottom;
   text-shadow: 0 2px 12px rgba(7, 9, 11, 0.9);
 }
+/* Track heroes: the bottom row is plain text on the full scrim so it never boxes over the map. */
+.pl-hero--zone .pl-hud--bl,
+.pl-hero--position .pl-hud--bl,
+.pl-hero--pit .pl-hud--bl {
+  bottom: 10px;
+  left: 14px;
+  min-height: 0;
+  max-width: 56%;
+  padding: 0;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  box-shadow: none;
+  text-shadow: 0 1px 8px rgba(7, 9, 11, 0.95);
+}
 .pl-hero--zone .pl-hero__tag,
 .pl-hero--position .pl-hero__tag,
 .pl-hero--pit .pl-hero__tag {
-  bottom: 10px;
+  right: 14px;
+  bottom: 8px;
+  max-width: 42%;
+  font-size: 19px;
 }
 
-/* Track layer: between the top chips and the bottom row */
+/* Track layer: between the top chips and the bottom text row */
 .pl-hero__track {
   position: absolute;
-  inset: 40px 0 34px;
+  inset: 38px 0 46px;
 }
 .pl-hero__track > svg {
   display: block;

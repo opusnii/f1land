@@ -40,7 +40,8 @@ function useDegradation(cars: LiveCar[]): Series[] {
       const row = acc[c];
       if (!row) continue;
       const values = Array.from({ length: row.length }, (_, i) => (row[i] && row[i]!.n >= 2 ? row[i]!.s / row[i]!.n : null));
-      if (values.filter((v) => v !== null).length >= 3) series.push({ id: c, color: HEX[c]!, values, label: t(`tyre.${c.toLowerCase()}`) });
+      // End label is the compound letter (fits the chart's label gutter); the legend below spells it out.
+      if (values.filter((v) => v !== null).length >= 3) series.push({ id: c, color: HEX[c]!, values, label: c[0] });
     }
     const n = Math.max(0, ...series.map((s) => s.values.length));
     for (const s of series) while (s.values.length < n) s.values.push(null);
@@ -80,7 +81,18 @@ export function TyreInfo({ car, cars, totalLaps }: { car: LiveCar; cars: LiveCar
       {series.length ? (
         <div className="tyreinfo__chart">
           <p className="pv-axis">{t('pv2.degY')}</p>
-          <LineChart series={series} height={150} yLabel={t('pv2.degY')} xLabel={t('pv2.degX')} xStart={1} yFormat={(v) => (v < 0 ? `−${fmtNumber(-v, 1)}` : `+${fmtNumber(v, 1)}`)} />
+          <LineChart series={series} height={150} yLabel={t('pv2.degY')} xStart={1} yFormat={(v) => (v < 0 ? `−${fmtNumber(-v, 1)}` : `+${fmtNumber(v, 1)}`)} />
+          <div className="tyreinfo__foot">
+            <ul className="pv-legend">
+              {series.map((s) => (
+                <li key={s.id}>
+                  <i style={{ background: s.color }} aria-hidden="true" />
+                  <b>{s.label}</b> {t(`tyre.${s.id.toLowerCase()}`)}
+                </li>
+              ))}
+            </ul>
+            <p className="pv-axis">{t('pv2.degX')} →</p>
+          </div>
         </div>
       ) : (
         <p className="pv-empty">{t('pv2.degFew')}</p>
