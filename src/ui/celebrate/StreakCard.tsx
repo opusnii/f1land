@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { STREAK_BONUS, useRewards, useStreak } from '@/store/rewards';
-import { useWallet } from '@/store/wallet';
+import { STREAK_BONUS, dayKey, useRewards, useStreak } from '@/store/rewards';
 import { useNav } from '@/store/nav';
 import { useNow } from '@/ui/kit';
-import { CountUp } from '@/ui/bet/motionBits';
+import { Obj } from '@/ui/Obj';
 import { fmtCountdown, fmtDuration, fmtNumber, t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { useReduced } from '@/screens/common';
-import { IconCheck, IconCoin, IconFire, IconGift, IconStar, IconTimer, IconTrophy } from '@/ui/icons';
+import { IconCheck, IconGift, IconStar, IconTimer, IconTrophy } from '@/ui/icons';
 import { streakTrack } from './streak';
+import { CoinLayer, flyCoins, headerBalanceEl } from './coins';
 import './celebrate.css';
 
 const msToMidnight = (ms: number) => {
@@ -44,14 +44,13 @@ function NextIn({ long }: { long?: boolean }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* Coin burst                                                          */
+/* Claim logic shared by both variants                                  */
 /* ------------------------------------------------------------------ */
 
-interface Burst {
+interface Float {
   key: number;
   bonus: number;
-  from: { x: number; y: number };
-  to: { x: number; y: number };
+  at: { x: number; y: number };
 }
 
 /** Centre of `el` in the coordinate space of `host`. */
@@ -61,82 +60,28 @@ function centre(el: Element | null, host: Element): { x: number; y: number } {
   return r ? { x: r.left + r.width / 2 - h.left, y: r.top + r.height / 2 - h.top } : { x: h.width / 2, y: h.height / 2 };
 }
 
-function Coins({ burst, count }: { burst: Burst; count: number }) {
-  const { from, to } = burst;
-  return (
-    <>
-      {Array.from({ length: count }, (_, i) => {
-        const spread = (i - (count - 1) / 2) * 0.36;
-        const dist = 46 + ((i * 37) % 5) * 9;
-        const sx = Math.sin(spread) * dist;
-        const sy = -Math.cos(spread) * dist;
-        const t = { duration: 0.95, times: [0, 0.4, 1] };
-        return (
-          <motion.i
-            key={i}
-            className="stk__coin"
-            style={{ left: from.x, top: from.y }}
-            initial={{ x: 0, y: 0, scale: 0.3, opacity: 0 }}
-            animate={{ x: [0, sx, to.x - from.x], y: [0, sy, to.y - from.y], scale: [0.3, 1, 0.55], opacity: [0, 1, 1, 0] }}
-            transition={{
-              delay: i * 0.045,
-              x: { ...t, ease: ['easeOut', 'easeIn'] },
-              y: { ...t, ease: ['easeOut', 'easeIn'] },
-              scale: t,
-              opacity: { duration: 0.95, times: [0, 0.12, 0.85, 1] },
-            }}
-          />
-        );
-      })}
-    </>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Claim logic shared by both variants                                  */
-/* ------------------------------------------------------------------ */
-
-function useClaim(host: RefObject<HTMLElement | null>, origin: RefObject<HTMLElement | null>, target: RefObject<HTMLElement | null>) {
+/** Check-in: coins fly from the button to the header balance chip (or to `fallback` when the screen has none). */
+function useClaim(host: RefObject<HTMLElement | null>, origin: RefObject<HTMLElement | null>, fallback: RefObject<HTMLElement | null>) {
   const reduced = useReduced();
-  const [burst, setBurst] = useState<Burst | null>(null);
-  const [bump, setBump] = useState(0);
-  const timers = useRef<number[]>([]);
-  const held = useRef(false);
-  const balance = useWallet((s) => s.balance);
-  const [shownBalance, setShownBalance] = useState(balance);
-
-  useEffect(() => {
-    if (!held.current) setShownBalance(balance);
-  }, [balance]);
-  useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+  const [float, setFloat] = useState<Float | null>(null);
+  const timer = useRef(0);
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   const claim = useCallback(() => {
+    if (useRewards.getState().lastCheckIn === dayKey(Date.now())) return;
     // Measured first: the claim button unmounts as soon as the store updates.
-    const from = host.current ? centre(origin.current, host.current) : null;
-    const to = host.current ? centre(target.current, host.current) : null;
-    // The displayed balance waits for the coins so the count-up lands with them.
-    held.current = !reduced;
+    const at = host.current ? centre(origin.current, host.current) : null;
+    flyCoins(origin.current, { to: headerBalanceEl() ?? fallback.current, reduced });
     const r = useRewards.getState().checkIn();
-    if (!r.ok) {
-      held.current = false;
-      return;
-    }
+    if (!r.ok) return;
     haptic.notify('success');
     sfx.checkIn();
-    if (reduced || !from || !to) return;
-    setBurst({ key: Date.now(), bonus: r.bonus, from, to });
-    timers.current.push(
-      window.setTimeout(() => {
-        held.current = false;
-        setShownBalance(useWallet.getState().balance);
-        setBump((n) => n + 1);
-        haptic.impact('light');
-      }, 640),
-      window.setTimeout(() => setBurst(null), 1700),
-    );
-  }, [reduced, host, origin, target]);
+    setFloat({ key: Date.now(), bonus: r.bonus, at: at ?? { x: 0, y: 0 } });
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setFloat(null), 1700);
+  }, [reduced, host, origin, fallback]);
 
-  return { claim, burst, bump, shownBalance, reduced };
+  return { claim, float, reduced };
 }
 
 /* ------------------------------------------------------------------ */
@@ -147,28 +92,34 @@ export function StreakCard({ variant = 'full' }: { variant?: 'full' | 'compact' 
   return variant === 'compact' ? <StreakCompact /> : <StreakFull />;
 }
 
+function Flame({ cold, pop, size, innerRef }: { cold: boolean; pop: number; size: number; innerRef?: RefObject<HTMLSpanElement | null> }) {
+  return (
+    <span ref={innerRef} key={pop} className="stk__flame" data-cold={cold || undefined} data-pop={pop ? '' : undefined} aria-hidden="true">
+      <Obj name="flame" size={size} />
+    </span>
+  );
+}
+
 function StreakFull() {
   const now = useToday();
   const view = useStreak(now);
   const host = useRef<HTMLElement>(null);
   const cta = useRef<HTMLButtonElement>(null);
-  const balRef = useRef<HTMLDivElement>(null);
-  const { claim, burst, bump, shownBalance, reduced } = useClaim(host, cta, balRef);
+  const flame = useRef<HTMLSpanElement>(null);
+  const { claim, float, reduced } = useClaim(host, cta, flame);
 
   const cold = view.count === 0 && !view.checkedToday;
   const { today, days } = streakTrack(view);
   const headline = view.count > 0 ? t('streak.day', { n: view.count }) : t('streak.start');
-  const justClaimed = burst ? today : 0;
+  const justClaimed = float ? today : 0;
   const next = t('streak.next', { t: '\u0000' }).split('\u0000');
 
   return (
-    <section ref={host} className="card card--pad stk stk--full" aria-label={t('streak.title')} data-ready={!view.checkedToday || undefined}>
+    <section ref={host} className="card stk stk--full" aria-label={t('streak.title')} data-ready={!view.checkedToday || undefined}>
       <header className="stk__head">
-        <span key={burst?.key ?? 0} className="stk__flame" data-cold={cold || undefined} data-pop={burst ? '' : undefined} aria-hidden="true">
-          <IconFire size={24} />
-        </span>
+        <Flame cold={cold} pop={float?.key ?? 0} size={48} innerRef={flame} />
         <div className="stk__txt">
-          <b className="stk__h">{headline}</b>
+          <h2 className="stk__h">{headline}</h2>
           <span className="stk__sub">{view.checkedToday ? t('streak.done') : t('streak.ready')}</span>
         </div>
         {view.best > 0 && (
@@ -179,7 +130,7 @@ function StreakFull() {
         )}
       </header>
 
-      <ul className="stk__days">
+      <ol className="stk__days">
         {STREAK_BONUS.map((bonus, i) => {
           const n = i + 1;
           const state = days[i]!;
@@ -202,7 +153,7 @@ function StreakFull() {
             </li>
           );
         })}
-      </ul>
+      </ol>
 
       <div className="stk__foot">
         {view.checkedToday ? (
@@ -219,36 +170,27 @@ function StreakFull() {
             </span>
           </div>
         ) : (
-          <button ref={cta} className="btn btn--primary stk__cta" onClick={claim}>
+          <button ref={cta} className="btn btn--primary btn--block stk__cta" onClick={claim}>
             <IconGift size={18} />
             {t('streak.claim', { n: view.nextBonus })}
           </button>
         )}
-        <div ref={balRef} className="stk__bal">
-          {bump > 0 && <i key={bump} className="stk__balfx" />}
-          <span className="stk__balk">{t('streak.balance')}</span>
-          <span className="stk__balv num">
-            <IconCoin size={14} />
-            <CountUp value={shownBalance} duration={700} />
-          </span>
-        </div>
       </div>
       <p className="stk__fine">{t('streak.fine')}</p>
 
       <span className="sr-only" role="status">
-        {burst ? t('streak.added', { n: fmtNumber(burst.bonus) }) : ''}
+        {float ? t('streak.added', { n: fmtNumber(float.bonus) }) : ''}
       </span>
       <div className="stk__fx" aria-hidden="true">
         <AnimatePresence>
-          {burst && (
-            <span key={burst.key} className="stk__floatwrap" style={{ left: burst.from.x, top: burst.from.y }}>
+          {float && !reduced && (
+            <span key={float.key} className="stk__floatwrap" style={{ left: float.at.x, top: float.at.y }}>
               <motion.span className="stk__float num" initial={{ opacity: 0, y: 12 }} animate={{ opacity: [0, 1, 1, 0], y: -30 }} transition={{ duration: 1.1, times: [0, 0.2, 0.7, 1] }}>
-                +{fmtNumber(burst.bonus)}
+                +{fmtNumber(float.bonus)}
               </motion.span>
             </span>
           )}
         </AnimatePresence>
-        {burst && !reduced && <Coins key={burst.key} burst={burst} count={10} />}
       </div>
     </section>
   );
@@ -260,7 +202,7 @@ function StreakCompact() {
   const host = useRef<HTMLDivElement>(null);
   const chip = useRef<HTMLButtonElement>(null);
   const flame = useRef<HTMLSpanElement>(null);
-  const { claim, burst, reduced } = useClaim(host, chip, flame);
+  const { claim, float } = useClaim(host, chip, flame);
 
   const cold = view.count === 0 && !view.checkedToday;
   const headline = view.count > 0 ? t('streak.day', { n: view.count }) : t('streak.start');
@@ -275,9 +217,7 @@ function StreakCompact() {
           useNav.getState().push({ name: 'rewards' });
         }}
       >
-        <span ref={flame} key={burst?.key ?? 0} className="stk__flame" data-cold={cold || undefined} data-pop={burst ? '' : undefined} aria-hidden="true">
-          <IconFire size={20} />
-        </span>
+        <Flame cold={cold} pop={float?.key ?? 0} size={36} innerRef={flame} />
         <span className="stk__txt">
           <b className="stk__h">{headline}</b>
           <span className="stk__sub">{sub}</span>
@@ -290,16 +230,13 @@ function StreakCompact() {
         </span>
       ) : (
         <button ref={chip} className="stk__chip stk__chip--go num" onClick={claim} aria-label={t('streak.claim', { n: view.nextBonus })}>
-          <IconGift size={16} />
-          +{view.nextBonus}
+          <Obj name="coin" size={20} />+{view.nextBonus}
         </button>
       )}
       <span className="sr-only" role="status">
-        {burst ? t('streak.added', { n: fmtNumber(burst.bonus) }) : ''}
+        {float ? t('streak.added', { n: fmtNumber(float.bonus) }) : ''}
       </span>
-      <div className="stk__fx" aria-hidden="true">
-        {burst && !reduced && <Coins key={burst.key} burst={burst} count={7} />}
-      </div>
+      <CoinLayer />
     </div>
   );
 }
