@@ -12,6 +12,9 @@ import { sfx } from '@/audio/sfx';
 import { IconBolt, IconChevron, IconFire, IconFlag, IconGlobe, IconHelmet, IconPit, IconStar, IconSwap, IconTarget, IconTrophy, IconTyre, IconWarning } from '@/ui/icons';
 import type { AchIcon, Tone } from '@/demo/progress';
 import type { Entry } from '@/store/wallet';
+import { Obj } from '@/ui/Obj';
+
+export { OfflineState, ScreenSkeleton, SkelList, SkelRow, useFeedPaused } from '@/ui/profile/States';
 
 export function useReduced(): boolean {
   const m = useSettings((s) => s.motion);
@@ -174,7 +177,8 @@ export function Toggle({ on, onChange, label }: { on: boolean; onChange: (v: boo
   );
 }
 
-export function MenuRow({ icon, title, sub, value, badge, tone = 'lime', onClick }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; value?: ReactNode; badge?: ReactNode; tone?: Tone; onClick: () => void }) {
+/** Navigation row. `art` (a studio object from src/assets) replaces the line-icon tile when given. */
+export function MenuRow({ icon, art, title, sub, value, badge, tone = 'lime', onClick }: { icon?: ReactNode; art?: string; title: ReactNode; sub?: ReactNode; value?: ReactNode; badge?: ReactNode; tone?: Tone; onClick: () => void }) {
   return (
     <button
       className="sc-menu"
@@ -183,7 +187,7 @@ export function MenuRow({ icon, title, sub, value, badge, tone = 'lime', onClick
         onClick();
       }}
     >
-      <span className={`sc-ic sc-ic--${tone}`}>{icon}</span>
+      {art ? <Obj name={art} size={36} className="sc-menu__art" /> : icon && <span className={`sc-ic sc-ic--${tone}`}>{icon}</span>}
       <span className="sc-menu__txt">
         <span className="sc-menu__t">{title}</span>
         {sub && <span className="sc-menu__s">{sub}</span>}
