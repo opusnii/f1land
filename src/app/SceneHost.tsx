@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
 import { useLive, onFrame, onMoment } from '@/store/live';
-import { useSettings, prefersReducedMotion, resolveQuality } from '@/store/settings';
+import { useSettings, prefersReducedMotion, resolveQuality, type RenderMode } from '@/store/settings';
 import type { RaceScene } from '@/three/engine/RaceScene';
 import type { CameraMode } from '@/three/engine/cameraRig';
 import { TrackMap } from '@/ui/TrackMap';
 import { useMapCars } from '@/app/hooks';
 import { t } from '@/i18n/core';
-import { sfx } from '@/audio/sfx';
 import { haptic } from '@/telegram/sdk';
+import { LiveArt } from '@/ui/live/LiveArt';
 import '@/styles/scene.css';
 
 export type SceneLayout = 'hidden' | 'full' | 'top';
@@ -23,7 +23,18 @@ interface SceneViewState {
   frozen: boolean;
   webglLost: boolean;
   pickList: string[] | null;
+  /** Explicit 3D choice on the Live screen; overrides the low-tier 2D-art default. */
+  live3dOptIn: boolean;
   set: (p: Partial<Omit<SceneViewState, 'set'>>) => void;
+}
+
+const OPT_IN_KEY = 'pa-f1-live3d';
+function readOptIn(): boolean {
+  try {
+    return localStorage.getItem(OPT_IN_KEY) === '1';
+  } catch {
+    return false;
+  }
 }
 
 export const useSceneView = create<SceneViewState>((set) => ({
@@ -35,8 +46,36 @@ export const useSceneView = create<SceneViewState>((set) => ({
   frozen: false,
   webglLost: false,
   pickList: null,
+  live3dOptIn: readOptIn(),
   set: (p) => set(p),
 }));
+
+/** Remember the Live render choice: picking 3D on a low-tier device is an explicit opt-in. */
+export function chooseLiveRender(mode: RenderMode): void {
+  useSettings.getState().set({ renderMode: mode });
+  const optIn = mode === '3d';
+  useSceneView.getState().set({ live3dOptIn: optIn });
+  try {
+    if (optIn) localStorage.setItem(OPT_IN_KEY, '1');
+    else localStorage.removeItem(OPT_IN_KEY);
+  } catch {
+    /* private mode: the choice lasts for the session */
+  }
+}
+
+/**
+ * Render mode actually used for a layout. On the Live screen ('full') low-tier devices default to
+ * the 2D art view until the user picks 3D; pool screens keep the stored mode. WebGL loss → 2D.
+ */
+export function useRenderMode(layout: SceneLayout): RenderMode {
+  const renderMode = useSettings((s) => s.renderMode);
+  const quality = useSettings((s) => s.quality);
+  const optIn = useSceneView((s) => s.live3dOptIn);
+  const webglLost = useSceneView((s) => s.webglLost);
+  if (renderMode !== '3d' || webglLost || !webglAvailable()) return '2d';
+  if (layout === 'full' && !optIn && resolveQuality(quality) === 'low') return '2d';
+  return '3d';
+}
 
 let activeScene: RaceScene | null = null;
 
@@ -82,10 +121,9 @@ export function webglAvailable(): boolean {
  */
 export function SceneHost() {
   const layout = useSceneView((s) => s.layout);
-  const webglLost = useSceneView((s) => s.webglLost);
   const renderMode = useSettings((s) => s.renderMode);
   const runner = useLive((s) => s.runner);
-  const use3d = renderMode === '3d' && !webglLost && webglAvailable();
+  const use3d = useRenderMode(layout) === '3d';
   useEffect(() => {
     if (renderMode !== '3d') return;
     const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1200));
@@ -93,12 +131,18 @@ export function SceneHost() {
   }, [renderMode]);
   return (
     <div className={`scene-host scene-host--${layout}`} aria-hidden={layout === 'hidden'}>
-      {runner && layout !== 'hidden' && (use3d ? <Scene3D key={`${runner.manifest.session_id}`} /> : <Scene2D />)}
+      {runner && layout !== 'hidden' && (use3d ? <Scene3D key={`${runner.manifest.session_id}`} /> : <Scene2D layout={layout} />)}
     </div>
   );
 }
 
-function Scene2D() {
+function Scene2D({ layout }: { layout: SceneLayout }) {
+  const labels = useSceneView((s) => s.labels);
+  return layout === 'full' ? <LiveArt labels={labels} /> : <SceneMap />;
+}
+
+/** Pool screens: the flat schematic under the pool hero. */
+function SceneMap() {
   const runner = useLive((s) => s.runner);
   const live = useLive((s) => s.live);
   const followId = useLive((s) => s.followId);
@@ -165,10 +209,7 @@ function Scene3D() {
         setReady(true);
       });
       const offFrame = onFrame((f) => scene.pushFrame(f));
-      const offMoment = onMoment((m) => {
-        scene.onMoment(m);
-        if (m.kind === 'OVERTAKE' && m.drivers.includes(useLive.getState().followId ?? '')) sfx.overtake();
-      });
+      const offMoment = onMoment((m) => scene.onMoment(m));
       let raf = 0;
       let last = performance.now();
       const loop = (now: number) => {
