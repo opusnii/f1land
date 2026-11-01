@@ -273,7 +273,7 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
-  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4);
+  padding: var(--sp-3) var(--sp-2) var(--sp-3) var(--sp-3);
 }
 .pf-stat + .pf-stat {
   border-left: 1px solid var(--stroke);
@@ -287,7 +287,7 @@
 .pf-stat__k {
   color: var(--muted);
   font-size: var(--fs-sm);
-  overflow-wrap: anywhere;
+  hyphens: auto;
 }
 .pf-spark {
   display: flex;
@@ -553,21 +553,25 @@
 
 /* Paused live feed: offline plate with the copy over its bottom scrim. */
 .pv-offline {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+}
+.pv-offline__art,
+.pv-offline__body {
+  grid-area: 1 / 1;
 }
 .pv-offline__art {
   width: 100%;
+  min-height: 100%;
 }
 .pv-offline__body {
   position: relative;
   z-index: 2;
+  align-self: end;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--sp-1);
-  margin-top: -56px;
-  padding: 0 var(--sp-4) var(--sp-4);
+  padding: var(--sp-6) var(--sp-4) var(--sp-4);
 }
 .pv-offline__title {
   margin: 0;
@@ -596,8 +600,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-2) var(--sp-3);
-  margin-top: -40px;
-  padding: 0 var(--sp-3) var(--sp-3) var(--sp-4);
+  padding: var(--sp-5) var(--sp-3) var(--sp-3) var(--sp-4);
 }
 .pv-offline--compact .pv-offline__title {
   font-size: var(--fs-md);

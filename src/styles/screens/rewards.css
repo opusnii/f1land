@@ -132,6 +132,21 @@
   font-weight: 600;
   white-space: nowrap;
 }
+@media (max-width: 380px) {
+  .rw-ms {
+    grid-template-columns: 40px minmax(0, 1fr);
+    align-items: start;
+    row-gap: var(--sp-2);
+  }
+  .rw-ms__art {
+    width: 40px !important;
+    height: 40px !important;
+  }
+  .rw-ms__cta {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+}
 .rw-start {
   gap: var(--sp-2);
   margin-top: var(--sp-3);
