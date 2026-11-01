@@ -255,9 +255,10 @@
   gap: 6px;
   width: 100%;
   min-height: 44px;
+  padding: 0 var(--sp-4);
   background: rgba(198, 255, 61, 0.08);
   color: var(--lime);
-  font-size: var(--fs-md);
+  font-size: var(--fs-sm);
   font-weight: 600;
   text-align: center;
   text-wrap: balance;

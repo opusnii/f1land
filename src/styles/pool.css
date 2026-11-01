@@ -2,6 +2,14 @@
 
 /* ---------- Shared parts ---------- */
 
+/* Inline SVG badges from ui/bet/icons */
+.flag-glyph,
+.rc-badge,
+.tyre-ring {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+}
 .pmeta {
   display: inline-flex;
   align-items: center;

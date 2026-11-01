@@ -76,7 +76,7 @@ export function SettingsScreen() {
       <Reveal i={0} className="section">
         <h2 className="set-h">{t('pv2.set.lang')}</h2>
         <div className="card set-group">
-          <Block title={t('settings.language')}>
+          <div className="set-row set-row--block">
             <Segmented<Lang>
               label={t('settings.language')}
               value={s.lang}
@@ -86,7 +86,7 @@ export function SettingsScreen() {
                 { id: 'en', label: 'English' },
               ]}
             />
-          </Block>
+          </div>
         </div>
       </Reveal>
 
