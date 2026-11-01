@@ -10,7 +10,7 @@ import { headlineValues } from '@/app/settlementText';
 import { previousFinalSettlement, settlementPhase } from '@/domain/settlement';
 import { fmtClock, fmtNumber, fmtOdds, fmtSec, plural, t } from '@/i18n/core';
 import { IconCheck, IconChevron, IconLock, IconRefund } from '@/ui/icons';
-import { FlagGlyph, IcTrophy } from './icons';
+import { Obj } from '@/ui/Obj';
 import { outcomeIcon } from './poolFamilies';
 import { CountUp } from './motionBits';
 
@@ -65,7 +65,7 @@ export function PoolStateCard({ lp, entries, blockKey, onOpen }: { lp: LivePool;
     return (
       <section className="rs rs--red" role="status">
         <span className="rs__ico" aria-hidden="true">
-          <FlagGlyph color="#ff3b47" size={22} />
+          <Obj name="flag-red" size={36} />
         </span>
         <div className="rs__t">
           <b>{t('pool.suspended')}</b>
@@ -168,7 +168,7 @@ function SettledCard({ lp, entries, onOpen }: { lp: LivePool; entries: Entry[]; 
       {kind === 'won' && <span className="rc__sweep" aria-hidden="true" />}
       <div className="rc__head">
         <span className="rc__badge" aria-hidden="true">
-          {kind === 'won' ? <IcTrophy size={24} /> : kind === 'lost' ? <IconLock size={19} /> : <IconCheck size={20} />}
+          <Obj name={kind === 'won' ? 'trophy-gold' : 'flag-chequered'} size={kind === 'won' ? 52 : 44} />
         </span>
         <div className="rc__t">
           <small>{t('pool2.result')}</small>
