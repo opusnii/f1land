@@ -3,17 +3,15 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useLive } from '@/store/live';
 import { useNav } from '@/store/nav';
 import { useWallet } from '@/store/wallet';
-import { multiplier, usePools, type LivePool } from '@/demo/poolEngine';
 import { DRIVER_BY_ID, TEAM_BY_ID } from '@/data/teams';
 import type { LiveCar, Moment } from '@/sim/types';
 import { fmtClock, fmtGap, fmtLap, fmtNumber, fmtOdds, fmtSec, t } from '@/i18n/core';
-import { msUntilLock } from '@/domain/lifecycle';
-import { marketTitle, outcomeShort, poolTexts } from '@/app/poolText';
-import { useSessionNow } from '@/app/hooks';
+import { marketTitle } from '@/app/poolText';
 import { LineChart, TyreBadge } from '@/ui/kit';
-import { IconChevron, IconLock, IconPit } from '@/ui/icons';
+import { Helmet } from '@/ui/Helmet';
+import { EmptyState } from '@/ui/primitives';
+import { IconPit } from '@/ui/icons';
 import { haptic } from '@/telegram/sdk';
-import { CountdownRing, PoolMeta } from './parts';
 import { FlagGlyph, IcArrowUp, IcNo, IcPass, IcRetire, IcStopwatch, IcSwapCar, IcSwords, RcBadge } from './icons';
 
 const teamColor = (id: string) => TEAM_BY_ID[DRIVER_BY_ID[id]?.teamId ?? '']?.color ?? '#888';
@@ -133,6 +131,7 @@ export function TowerStrip({ cars, followId, quali, cut, onPick }: { cars: LiveC
             aria-label={`P${c.position} ${DRIVER_BY_ID[c.id]?.lastName ?? c.id}`}
             aria-pressed={c.id === followId}
           >
+            <Helmet driverId={c.id} size={24} num={false} decorative className="tw-chip__helmet" />
             <span className="tw-chip__top">
               <span className="tw-chip__pos num">{c.position}</span>
               <span className="tw-chip__code">{DRIVER_BY_ID[c.id]?.code}</span>
@@ -189,122 +188,10 @@ export function FollowCard({ car, cars, quali, onOpen }: { car: LiveCar; cars: L
 }
 
 /* ------------------------------------------------------------------ */
-/* Pools                                                               */
+/* Pools: featured plate + rows (src/ui/live/PoolsDrawer.tsx)           */
 /* ------------------------------------------------------------------ */
 
-export function PoolCard({ lp, now, onOpen, wide }: { lp: LivePool; now: number; onOpen: () => void; wide?: boolean }) {
-  const tx = poolTexts(lp.pool);
-  const mine = useWallet((s) => s.entries.some((e) => e.poolId === lp.pool.pool_id));
-  const locked = lp.pool.status !== 'OPEN';
-  const book = lp.book;
-  const top = [...lp.pool.outcomes]
-    .map((o) => ({ o, m: locked && book.finalMultipliers?.[o.id] ? book.finalMultipliers[o.id]! : multiplier(book, o.id) }))
-    .sort((a, b) => a.m - b.m)
-    .slice(0, 3);
-  const ms = msUntilLock(lp.pool, now);
-  const total = Date.parse(lp.pool.closes_at) - Date.parse(lp.pool.opens_at);
-  const totalStake = Object.values(book.stakes).reduce((a, b) => a + b, 0);
-  const winner = lp.pool.settlement?.winner_outcome_id ?? null;
-  return (
-    <div
-      className={`pc ${wide ? 'pc--wide' : ''} ${mine ? 'pc--mine' : ''} ${locked ? 'pc--locked' : ''}`}
-      role="button"
-      tabIndex={0}
-      aria-label={`${tx.title}. ${tx.question}`}
-      onClick={() => {
-        haptic.tap();
-        onOpen();
-      }}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpen()}
-    >
-      <div className="pc__head">
-        {locked ? (
-          <span className="pc__lock">
-            <IconLock size={16} />
-          </span>
-        ) : (
-          <CountdownRing ms={ms} totalMs={total} size={40} label={`${t('pool.locksIn')} ${Math.ceil(ms / 1000)}`} />
-        )}
-        <div className="pc__titles">
-          <div className="pc__kicker">
-            <span className="ellipsis">{tx.title}</span>
-            {mine && <span className="pc__mine">{t('lv.youreIn')}</span>}
-            {locked && <span className={`pc__status pc__status--${lp.pool.status.toLowerCase()}`}>{t(`pool.status.${lp.pool.status}`)}</span>}
-          </div>
-          <div className="pc__q">{tx.question}</div>
-        </div>
-      </div>
-      <div className="pc__outs">
-        {top.map(({ o, m }) => (
-          <span key={o.id} className={`pc__out ${winner === o.id ? 'pc__out--win' : ''}`}>
-            <span className="pc__out-l">{outcomeShort(o, lp.pool)}</span>
-            <b className="num">{fmtOdds(m)}x</b>
-          </span>
-        ))}
-      </div>
-      <div className="pc__foot">
-        <PoolMeta total={totalStake} players={book.players} />
-        <span className="pc__go">
-          {locked ? t('lv.view') : t('lv.predict')} <IconChevron size={14} />
-        </span>
-      </div>
-    </div>
-  );
-}
-
-export function PoolsTab({ layout }: { layout: 'strip' | 'list' }) {
-  const pools = usePools((s) => s.pools);
-  const channelId = useLive((s) => s.channelId);
-  const push = useNav((s) => s.push);
-  const now = useSessionNow();
-  const open = pools.filter((p) => p.pool.status === 'OPEN').sort((a, b) => b.priority - a.priority || Date.parse(a.pool.closes_at) - Date.parse(b.pool.closes_at));
-  const pending = pools.filter((p) => p.pool.status === 'LOCKED' || p.pool.status === 'RESOLVING').slice(-6).reverse();
-  const done = pools.filter((p) => p.pool.status === 'SETTLED' || p.pool.status === 'VOID').slice(-4).reverse();
-  const openPool = (lp: LivePool) => push({ name: 'pool', channelId, poolId: lp.pool.pool_id });
-  if (!open.length && !pending.length && !done.length) {
-    return (
-      <div className="lv-empty">
-        <span className="lv-empty__pulse" />
-        {t('pool.noPools')}
-      </div>
-    );
-  }
-  if (layout === 'strip') {
-    return (
-      <div className="pc-strip">
-        {[...open, ...pending].map((lp) => (
-          <PoolCard key={lp.pool.pool_id} lp={lp} now={now} onOpen={() => openPool(lp)} />
-        ))}
-        {!open.length && !pending.length && <div className="lv-empty">{t('pool.noPools')}</div>}
-      </div>
-    );
-  }
-  return (
-    <div className="pc-list">
-      {open.length > 0 && <GroupHead label={t('pool.liveMarkets')} count={open.length} tone="lime" />}
-      {open.map((lp) => (
-        <PoolCard key={lp.pool.pool_id} lp={lp} now={now} wide onOpen={() => openPool(lp)} />
-      ))}
-      {pending.length > 0 && <GroupHead label={t('pool.resolving')} count={pending.length} />}
-      {pending.map((lp) => (
-        <PoolCard key={lp.pool.pool_id} lp={lp} now={now} wide onOpen={() => openPool(lp)} />
-      ))}
-      {done.length > 0 && <GroupHead label={t('pool.settled')} count={done.length} />}
-      {done.map((lp) => (
-        <PoolCard key={lp.pool.pool_id} lp={lp} now={now} wide onOpen={() => openPool(lp)} />
-      ))}
-    </div>
-  );
-}
-
-function GroupHead({ label, count, tone }: { label: string; count: number; tone?: 'lime' }) {
-  return (
-    <div className={`lv-group ${tone ? `lv-group--${tone}` : ''}`}>
-      <span>{label}</span>
-      <b className="num">{count}</b>
-    </div>
-  );
-}
+export { PoolsTab, FeaturedPool, PoolRow } from '@/ui/live/PoolsDrawer';
 
 /* ------------------------------------------------------------------ */
 /* Timing table                                                        */
@@ -362,7 +249,7 @@ export function TimingTable({ cars, quali, followId, onPick }: { cars: LiveCar[]
 
 export function EventsFeed({ moments }: { moments: Moment[] }) {
   const list = [...moments].reverse().filter((m) => m.kind !== 'BATTLE');
-  if (!list.length) return <div className="lv-empty">{t('live.noEvents')}</div>;
+  if (!list.length) return <EmptyState compact art="empty-feed" title={t('live.noEvents')} body={t('hl.empty.feed.body')} tagline={t('tag.live')} />;
   return (
     <ol className="rcf">
       {list.map((m) => (
@@ -392,7 +279,7 @@ export function MyEntries() {
   const all = useWallet((s) => s.entries);
   const entries = all.filter((e) => e.sessionId === runner?.manifest.session_id);
   const push = useNav((s) => s.push);
-  if (!entries.length) return <div className="lv-empty">{t('live.noEntries')}</div>;
+  if (!entries.length) return <EmptyState compact art="empty-picks" title={t('live.noEntries')} body={t('hl.empty.mine.body')} tagline={t('tag.live')} />;
   return (
     <div className="me-list">
       {entries.map((e) => {
