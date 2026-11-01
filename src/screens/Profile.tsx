@@ -149,7 +149,7 @@ export function ProfileScreen() {
           )}
           <div className="pf-hero__top">
             <button type="button" className="pf-hero__av" aria-label={t('profile.favorite')} onClick={openPicker}>
-              {you.photo ? <img src={you.photo} alt="" /> : <Helmet driverId={you.driverId} size={96} num={!!favD} decorative />}
+              {you.photo ? <img src={you.photo} alt="" /> : <Helmet driverId={you.driverId} size={72} num={!!favD} decorative />}
             </button>
             <div className="pf-hero__who">
               <h1 className="pf-hero__name">

@@ -14,6 +14,7 @@ import { fmtClock, fmtCountdown, fmtNumber, getLang, t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { PageHead, Reveal, groupByDay, signed, useBack, useReduced } from './common';
+import '@/styles/screens/wallet.css';
 
 const DAILY_MS = 20 * 3600_000;
 const DAILY_AMOUNT = 200;
@@ -211,7 +212,7 @@ export function WalletScreen() {
                         </span>
                         <span className="wl-tx__txt">
                           <b>{t(`wallet.tx.${tx.kind}`)}</b>
-                          <span className="ellipsis">{e ? `${e.outcomeLabel} · ${e.meetingName[lang]}` : tx.id === 'tx_welcome' ? t('scr.wallet.welcome') : fmtClock(tx.at)}</span>
+                          <span>{e ? `${e.outcomeLabel} · ${e.meetingName[lang]}` : tx.id === 'tx_welcome' ? t('scr.wallet.welcome') : fmtClock(tx.at)}</span>
                         </span>
                         <span className={`wl-tx__amt num ${tx.amount > 0 ? 'lime' : tx.amount < 0 ? 'sc-neg' : ''}`}>{signed(tx.amount, (n) => fmtNumber(n))}</span>
                         {e && <IconChevron size={14} className="icon muted" />}

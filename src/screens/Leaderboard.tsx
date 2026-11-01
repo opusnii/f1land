@@ -13,6 +13,7 @@ import { fmtDuration, fmtNumber, t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { PageHead, Reveal, useBack, useReduced } from './common';
 import { useYou } from './Profile';
+import '@/styles/screens/leaderboard.css';
 
 type Player = LbPlayer & { photo?: string };
 
@@ -64,13 +65,13 @@ function Row({ p, rank }: { p: Player; rank: number }) {
     <div className="lb-row" data-you={p.you || undefined}>
       <span className="lb-row__rank num">{rank}</span>
       <Trend n={p.trend} />
-      <Avatar p={p} size={36} />
+      <Avatar p={p} size={32} />
       <span className="lb-row__name">
-        <b className="ellipsis">{p.you ? `${p.name} · ${t('lb.you')}` : p.name}</b>
-        <span className="lb-row__sub">
+        <span className="lb-row__who">
+          <b>{p.you ? `${p.name} · ${t('lb.you')}` : p.name}</b>
           {p.countryCode && <Flag cc={p.countryCode} size={16} />}
-          <span className="ellipsis">{p.you ? t('scr.lb.yourScore') : t('scr.lb.acc', { n: Math.round(p.winRate * 100) })}</span>
         </span>
+        <span className="lb-row__sub">{p.you ? t('scr.lb.yourScore') : t('scr.lb.acc', { n: Math.round(p.winRate * 100) })}</span>
       </span>
       <span className="lb-row__pts num">
         {fmtNumber(p.points)}
