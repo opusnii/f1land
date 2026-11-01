@@ -681,13 +681,13 @@
   border-radius: 14px;
   overflow: hidden;
   isolation: isolate;
-  background: rgba(22, 19, 6, 0.96);
+  background: #16130a;
   box-shadow: inset 0 0 0 1px rgba(255, 209, 46, 0.45);
   color: var(--yellow);
   --bn-tone: 255, 209, 46;
 }
 .lv-banner--red {
-  background: rgba(32, 8, 10, 0.96);
+  background: rgb(32, 8, 10);
   box-shadow: inset 0 0 0 1px rgba(255, 59, 71, 0.5);
   color: #ff8088;
   --bn-tone: 255, 59, 71;
