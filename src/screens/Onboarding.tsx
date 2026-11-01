@@ -1,68 +1,21 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useSettings } from '@/store/settings';
-import { CHANNELS } from '@/demo/channels';
+import { Art } from '@/ui/Art';
+import { DisplayTitle, Tagline } from '@/ui/primitives';
 import { IconChevron, LogoPulse } from '@/ui/icons';
 import { t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
-import { CircuitThumb, useReduced } from './common';
+import { useReduced } from './common';
 
-const STEPS = 3;
-
-function LightsVisual() {
-  const circuit = CHANNELS.find((c) => c.featured)?.circuitId ?? CHANNELS[0]!.circuitId;
-  return (
-    <div className="sc-onb__vis">
-      <div className="sc-onb__lights" aria-hidden="true">
-        {[0, 1, 2, 3, 4].map((i) => (
-          <span key={i} style={{ animationDelay: `${0.25 + i * 0.32}s` }}>
-            <i />
-            <i />
-          </span>
-        ))}
-      </div>
-      <CircuitThumb id={circuit} size={210} draw cars={['#ff8000', '#e8002d', '#27f4d2', '#3671c6']} className="sc-onb__track" />
-    </div>
-  );
-}
-
-function ZonesVisual() {
-  return (
-    <div className="sc-onb__vis">
-      <CircuitThumb id="jp-1962" size={220} draw className="sc-onb__track sc-onb__track--dim" />
-      <div className="sc-onb__zones" aria-hidden="true">
-        <span style={{ ['--c' as string]: 'var(--cyan)', left: '6%', top: '22%' }}>
-          S1 <b>×2.8</b>
-        </span>
-        <span data-on style={{ ['--c' as string]: 'var(--lime)', left: '40%', top: '6%' }}>
-          S2 <b>×1.9</b>
-        </span>
-        <span style={{ ['--c' as string]: 'var(--purple)', right: '4%', top: '54%' }}>
-          S3 <b>×3.4</b>
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function SwipeVisual() {
-  return (
-    <div className="sc-onb__vis sc-onb__vis--swipe">
-      <div className="sc-onb__ticket" aria-hidden="true">
-        <span className="sc-onb__tk">{t('scr.onb.ticket')}</span>
-        <b>NOR → LEC</b>
-        <span className="num lime">×1.85</span>
-      </div>
-      <div className="sc-onb__swipe" aria-hidden="true">
-        <span className="sc-onb__knob">
-          <IconChevron size={20} />
-        </span>
-        <span className="sc-onb__slabel">{t('scr.onb.swipe')}</span>
-      </div>
-    </div>
-  );
-}
+/** Three full-screen art slides (spec §9.6). Focal points keep each subject clear of the bottom copy. */
+const SLIDES = [
+  { art: 'onb-1-lights', focal: '50% 22%', h: 'pv2.onb.h1', p: 'pv2.onb.p1' },
+  { art: 'onb-2-zones', focal: '45% 18%', h: 'pv2.onb.h2', p: 'pv2.onb.p2' },
+  { art: 'onb-3-swipe', focal: '62% 30%', h: 'pv2.onb.h3', p: 'pv2.onb.p3' },
+] as const;
+const STEPS = SLIDES.length;
 
 export function Onboarding() {
   const onboarded = useSettings((s) => s.onboarded);
@@ -88,67 +41,79 @@ export function Onboarding() {
     setStep(n);
   };
   const next = () => (step < STEPS - 1 ? goTo(step + 1) : finish());
-
-  const heads = ['scr.onb.h1', 'scr.onb.h2', 'scr.onb.h3'];
-  const bodies = ['onb.s1', 'onb.s2', 'onb.s3'];
-  const slide = reduced ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } } : { initial: { opacity: 0, x: 60 * dir }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -60 * dir } };
+  const last = step === STEPS - 1;
+  const slide = SLIDES[step]!;
+  const copyAnim = reduced
+    ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
+    : { initial: { opacity: 0, x: 40 * dir }, animate: { opacity: 1, x: 0 }, exit: { opacity: 0, x: -28 * dir } };
 
   return (
     <AnimatePresence>
       {!onboarded && (
-        <motion.div className="sc-onb" role="dialog" aria-modal="true" aria-label={t('onb.title')} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, scale: reduced ? 1 : 1.04 }} transition={{ duration: 0.35 }}>
-          <div className="sc-onb__bg" aria-hidden="true" />
-          <div className="sc-onb__top">
-            <div className="brand">
-              <LogoPulse className="brand__logo" />
-              <div className="brand__text">
-                <span className="brand__name">
-                  PULSE <b>ARENA</b>
-                </span>
-                <span className="brand__sub">{t('app.module')}</span>
-              </div>
+        <motion.div
+          className="onb"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('onb.title')}
+          data-reduced={reduced || undefined}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduced ? 0.15 : 0.32 }}
+        >
+          {/* All plates stay mounted so the next one is decoded before it fades in. */}
+          <div className="onb__plates" aria-hidden="true">
+            {SLIDES.map((s, i) => (
+              <Art key={s.art} name={s.art} priority={i === 0} scrim="b" focal={s.focal} sizes="100vw" className="onb__plate" style={{ opacity: i === step ? 1 : 0 }} />
+            ))}
+          </div>
+
+          <div className="onb__top">
+            <div className="logo-lockup onb__logo" aria-label="Pulse Arena">
+              <LogoPulse className="logo-lockup__mark" />
+              <span className="logo-lockup__word" aria-hidden="true">
+                PULSE <b>ARENA</b>
+              </span>
             </div>
-            <button className="sc-onb__skip" onClick={finish}>
+            <button type="button" className="sc-onb__skip onb__skip" onClick={finish}>
               {t('scr.onb.skip')}
             </button>
           </div>
+
           <motion.div
-            className="sc-onb__stage"
+            className="onb__stage"
             drag={reduced ? false : 'x'}
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.25}
+            dragElastic={0.2}
             onDragEnd={(_, info) => {
               if (info.offset.x < -60 || info.velocity.x < -400) goTo(step + 1);
               else if (info.offset.x > 60 || info.velocity.x > 400) goTo(step - 1);
             }}
           >
             <AnimatePresence mode="wait" initial={false}>
-              <motion.div key={step} className="sc-onb__slide" {...slide} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}>
-                {step === 0 ? <LightsVisual /> : step === 1 ? <ZonesVisual /> : <SwipeVisual />}
-                <div className="sc-onb__copy">
-                  <div className="sc-onb__k num">
-                    0{step + 1} <i>/ 0{STEPS}</i>
-                  </div>
-                  {step === 0 && <div className="sc-onb__welcome">{t('onb.title')}</div>}
-                  <h2 className="sc-onb__h">{t(heads[step]!)}</h2>
-                  <p className="sc-onb__p">{t(bodies[step]!)}</p>
-                </div>
+              <motion.div key={step} className="onb__copy" {...copyAnim} transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}>
+                <DisplayTitle as="h2" size="lg" className="onb__title">
+                  {t(slide.h)}
+                </DisplayTitle>
+                <p className="onb__p">{t(slide.p)}</p>
+                {last && <Tagline className="onb__tag">{t('tag.onboarding')}</Tagline>}
               </motion.div>
             </AnimatePresence>
           </motion.div>
-          <div className="sc-onb__foot">
-            <div className="sc-onb__dots" role="tablist" aria-label={t('onb.title')}>
-              {Array.from({ length: STEPS }, (_, i) => (
-                <button key={i} role="tab" aria-selected={i === step} aria-label={`${i + 1} / ${STEPS}`} onClick={() => goTo(i)}>
+
+          <div className="onb__foot">
+            <div className="onb__dots" role="tablist" aria-label={t('onb.title')}>
+              {SLIDES.map((s, i) => (
+                <button key={s.art} type="button" role="tab" aria-selected={i === step} aria-label={t('pv2.onb.step', { n: i + 1, m: STEPS })} onClick={() => goTo(i)}>
                   <span />
                 </button>
               ))}
             </div>
-            <button className="btn btn--primary btn--lg btn--block sc-onb__go" onClick={next}>
-              {step < STEPS - 1 ? t('scr.onb.next') : t('onb.go')}
+            <button type="button" className="btn btn--primary btn--lg btn--block onb__go" onClick={next}>
+              {last ? t('onb.go') : t('scr.onb.next')}
               <IconChevron size={18} />
             </button>
-            <p className="sc-onb__demo">{t('app.demoNote')}</p>
+            <p className="onb__demo">{t('pv2.demo')}</p>
           </div>
         </motion.div>
       )}
