@@ -1,8 +1,8 @@
-/* Sticky ticket dock for the pool screen: pick, stake, potential return and the swipe-to-confirm CTA. */
+/* Sticky ticket dock for the pool screen: pick, stake presets, potential return and the swipe-to-confirm CTA (spec §6). */
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { fmtCountdown, fmtNumber, t } from '@/i18n/core';
-import { IconChevron, IconLock, IconTarget } from '@/ui/icons';
+import { IconCheck, IconChevron, IconClose, IconLock, IconTarget } from '@/ui/icons';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { prefersReducedMotion, useSettings } from '@/store/settings';
@@ -11,7 +11,7 @@ import { CountUp, OddsTicker } from './motionBits';
 
 export const MIN_STAKE = 10;
 export const MAX_STAKE = 5000;
-/** Lock countdown turns amber at this point (red heartbeat at 10 s lives in the header chip). */
+/** Lock countdown turns amber at this point (red heartbeat at 10 s lives in the header timer). */
 export const URGENT_MS = 30_000;
 const CHIPS = [10, 25, 50, 100] as const;
 
@@ -34,6 +34,8 @@ export interface TicketDockProps {
   ctaLabel: string;
   ctaSub?: string;
   canConfirm: boolean;
+  /** Why the CTA is disabled (shown under it). */
+  reason?: string;
   onConfirm: () => void;
   onClear: () => void;
   lockedText: string;
@@ -41,7 +43,7 @@ export interface TicketDockProps {
 
 const stepOf = (v: number) => (v >= 500 ? 50 : v >= 100 ? 25 : 5);
 
-export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, totalMs, ctaLabel, ctaSub, canConfirm, onConfirm, onClear, lockedText }: TicketDockProps) {
+export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, totalMs, ctaLabel, ctaSub, canConfirm, reason, onConfirm, onClear, lockedText }: TicketDockProps) {
   const reduced = prefersReducedMotion(useSettings((s) => s.motion));
   const urgent = !locked && msLeft <= URGENT_MS;
   const frac = locked ? 0 : Math.max(0, Math.min(1, totalMs > 0 ? msLeft / totalMs : 0));
@@ -74,19 +76,19 @@ export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, tota
           </span>
         ) : (
           <span className="tdock__k">
-            {locked ? t('pool2.headerLocked') : t('pool2.ticket')}
+            <span className="techlabel">{locked ? t('pool2.headerLocked') : t('pool2.ticket')}</span>
             {open && <span className="tdock__count">{t('pl.onePick')}</span>}
             <span className="tdock__demo">DEMO</span>
           </span>
         )}
         <span className="tdock__bal num">
-          <IcCoins size={12} /> <b>{fmtNumber(Math.floor(balance))}</b>
+          <IcCoins size={13} /> <b>{fmtNumber(Math.floor(balance))}</b>
         </span>
       </div>
 
       {locked ? (
         <div className="tdock__locked" role="status">
-          <span className="tdock__lock-ico">
+          <span className="tdock__lock-ico" aria-hidden="true">
             <IconLock size={15} />
           </span>
           <span>{lockedText}</span>
@@ -94,7 +96,9 @@ export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, tota
       ) : pick ? (
         <div className="tdock__row">
           <div className="tdock__pick">
-            <span className="tdock__pick-ico">{pick.icon}</span>
+            <span className="tdock__pick-ico" aria-hidden="true">
+              {pick.icon}
+            </span>
             <span className="tdock__pick-t">
               <b>{pick.label}</b>
               <small>{pick.share && pick.share > 0 ? t('pool2.share', { p: Math.max(1, Math.round(pick.share * 100)) }) : t('pool2.firstBacker')}</small>
@@ -109,15 +113,8 @@ export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, tota
                 onClear();
               }}
             >
-              ×
+              <IconClose size={16} />
             </button>
-          </div>
-          <div className="tdock__ret" aria-live="polite">
-            <small>{t('pool2.return')}</small>
-            <b className="num">
-              <CountUp value={ret} duration={380} />
-              <em>PULSE</em>
-            </b>
           </div>
         </div>
       ) : (
@@ -140,11 +137,23 @@ export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, tota
             initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
             animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
             exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            transition={{ duration: reduced ? 0.12 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: reduced ? 0.12 : 0.32, ease: [0.16, 1, 0.3, 1] }}
           >
-            {open && <StakeRow stake={stake} onStake={onStake} balance={balance} />}
+            {open && (
+              <div className="tdock__stake-row">
+                <StakeRow stake={stake} onStake={onStake} balance={balance} />
+                <div className="tdock__ret" aria-live="polite">
+                  <small className="techlabel">{t('pv2.returnK')}</small>
+                  <b className="num">
+                    ≈ <CountUp value={ret} duration={reduced ? 0 : 420} />
+                  </b>
+                  <em>PULSE</em>
+                </div>
+              </div>
+            )}
             <div className="tdock__cta">
-              <SwipeCta label={ctaLabel} sub={ctaSub} disabled={!canConfirm} locked={locked} onConfirm={onConfirm} />
+              <SwipeCta label={ctaLabel} sub={ctaSub} disabled={!canConfirm} locked={locked} onConfirm={onConfirm} reduced={reduced} />
+              {(locked || reason) && <p className="tdock__reason">{locked ? t('pv2.lockedReason') : reason}</p>}
             </div>
           </motion.div>
         )}
@@ -154,7 +163,7 @@ export function TicketDock({ locked, pick, stake, onStake, balance, msLeft, tota
 }
 
 /* ------------------------------------------------------------------ */
-/* Stake: stepper + quick chips                                        */
+/* Stake: stepper + preset chips                                       */
 /* ------------------------------------------------------------------ */
 
 function StakeRow({ stake, onStake, balance }: { stake: number; onStake: (v: number) => void; balance: number }) {
@@ -214,20 +223,21 @@ function StakeRow({ stake, onStake, balance }: { stake: number; onStake: (v: num
 
 const KNOB = 48;
 const PAD = 4;
-const COMMIT = 0.82;
+const COMMIT = 0.85;
+const NUDGE_EVERY = 4000;
+const NUDGES = 3;
 
 /**
- * Deliberate commit gesture: the knob must travel most of the track. Enter /
- * Space confirm for keyboard and assistive tech. Becomes inert the instant it
- * is disabled, even mid-drag (QA17).
+ * Deliberate commit gesture: the fill follows the finger and clicks (medium haptic) past 85 %.
+ * Enter / Space confirm for keyboard and assistive tech. Inert the instant it is disabled, even mid-drag (QA17).
  */
-function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; sub?: string; disabled: boolean; locked: boolean; onConfirm: () => void }) {
+function SwipeCta({ label, sub, disabled, locked, onConfirm, reduced }: { label: string; sub?: string; disabled: boolean; locked: boolean; onConfirm: () => void; reduced: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
-  const drag = useRef<{ x0: number; max: number; id: number } | null>(null);
+  const drag = useRef<{ x0: number; max: number; id: number; armed: boolean } | null>(null);
   const [x, setX] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [done, setDone] = useState(false);
-  const lastNotch = useRef(0);
+  const [nudge, setNudge] = useState(0);
 
   useLayoutEffect(() => {
     if (disabled) {
@@ -237,12 +247,24 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
     }
   }, [disabled]);
 
+  // Chevron hint every 4 s, three times, then rest (spec §6: never loop forever).
+  useEffect(() => {
+    if (disabled || reduced) return;
+    let n = 0;
+    const id = window.setInterval(() => {
+      n += 1;
+      setNudge(n);
+      if (n >= NUDGES) window.clearInterval(id);
+    }, NUDGE_EVERY);
+    return () => window.clearInterval(id);
+  }, [disabled, reduced]);
+
   useEffect(() => {
     if (!done) return;
     const id = window.setTimeout(() => {
       setDone(false);
       setX(0);
-    }, 700);
+    }, 1100);
     return () => window.clearTimeout(id);
   }, [done]);
 
@@ -252,7 +274,6 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
     if (disabled || done) return;
     setX(maxOf());
     setDone(true);
-    haptic.impact('heavy');
     onConfirm();
   };
 
@@ -268,10 +289,8 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
     }
   };
 
-  const progress = (() => {
-    const m = maxOf();
-    return m > 0 ? x / m : 0;
-  })();
+  const m = maxOf();
+  const progress = done ? 1 : m > 0 ? x / m : 0;
 
   return (
     <div
@@ -289,8 +308,7 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
       }}
       onPointerDown={(e) => {
         if (disabled || done) return;
-        drag.current = { x0: e.clientX - x, max: maxOf(), id: e.pointerId };
-        lastNotch.current = 0;
+        drag.current = { x0: e.clientX - x, max: maxOf(), id: e.pointerId, armed: false };
         setDragging(true);
         e.currentTarget.setPointerCapture?.(e.pointerId);
         haptic.impact('light');
@@ -303,11 +321,10 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
           return;
         }
         const nx = Math.max(0, Math.min(d.max, e.clientX - d.x0));
-        // Detents every quarter of the track make the travel feel mechanical.
-        const notch = Math.floor((nx / Math.max(1, d.max)) * 4);
-        if (notch !== lastNotch.current) {
-          lastNotch.current = notch;
-          haptic.tap();
+        const past = nx >= d.max * COMMIT;
+        if (past !== d.armed) {
+          d.armed = past;
+          if (past) haptic.impact('medium');
         }
         setX(nx);
       }}
@@ -319,21 +336,19 @@ function SwipeCta({ label, sub, disabled, locked, onConfirm }: { label: string; 
       }}
       style={{ ['--sw-p' as string]: progress.toFixed(3) } as CSSProperties}
     >
-      <span className="sw__fill" style={{ width: x > 0 || done ? x + KNOB + PAD * 2 : 0 }} aria-hidden="true" />
-      <span className="sw__shine" aria-hidden="true" />
-      <span className="sw__label" style={{ opacity: 1 - Math.min(0.75, progress * 1.1) }}>
-        <b>{label}</b>
-        {sub && <small>{sub}</small>}
+      <span className="sw__fill" style={{ width: done ? '100%' : x > 0 ? x + KNOB + PAD * 2 : 0 }} aria-hidden="true" />
+      <span className="sw__label" style={{ opacity: done ? 1 : 1 - Math.min(0.8, progress * 1.15) }}>
+        <b>{done ? t('pv2.accepted') : label}</b>
+        {sub && !done && <small>{sub}</small>}
       </span>
-      {!disabled && (
-        <span className="sw__chev" aria-hidden="true" style={{ opacity: 1 - progress }}>
-          <i />
-          <i />
-          <i />
+      {!disabled && !done && (
+        <span key={nudge} className={`sw__chev ${nudge > 0 ? 'sw__chev--nudge' : ''}`} aria-hidden="true" style={{ opacity: 1 - progress }}>
+          <IconChevron size={16} />
+          <IconChevron size={16} />
         </span>
       )}
-      <span className="sw__knob" style={{ transform: x ? `translate3d(${x}px, 0, 0)` : undefined, transition: dragging ? 'none' : 'transform 0.35s var(--ease-out)' }} aria-hidden="true">
-        {locked ? <IconLock size={18} /> : <IconChevron size={22} />}
+      <span className="sw__knob" style={{ transform: x ? `translate3d(${x}px, 0, 0)` : undefined, transition: dragging ? 'none' : `transform ${reduced ? 0 : 0.32}s var(--ease-out)` }} aria-hidden="true">
+        {done ? <IconCheck size={22} /> : locked ? <IconLock size={18} /> : <IconChevron size={22} />}
       </span>
     </div>
   );
