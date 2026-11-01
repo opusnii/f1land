@@ -1,24 +1,25 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { useLive, onMoment } from '@/store/live';
+import { useLive } from '@/store/live';
 import { useSettings, prefersReducedMotion } from '@/store/settings';
 import { usePools } from '@/demo/poolEngine';
 import { useWallet } from '@/store/wallet';
 import { CHANNELS } from '@/demo/channels';
 import { CIRCUIT_META } from '@/data/circuits';
 import { DRIVER_BY_ID, TEAM_BY_ID } from '@/data/teams';
-import type { LiveState, Moment } from '@/sim/types';
-import type { CameraMode } from '@/three/engine/cameraRig';
-import { flagEmoji, fmtCountdown, getLang, t } from '@/i18n/core';
-import { useSceneView, getScene, webglAvailable } from '@/app/SceneHost';
-import { DriverAvatar, Segmented, Sheet } from '@/ui/kit';
+import type { LiveState } from '@/sim/types';
+import { fmtCountdown, getLang, t } from '@/i18n/core';
+import { useSceneView } from '@/app/SceneHost';
+import { DriverAvatar, Sheet } from '@/ui/kit';
+import { Flag } from '@/ui/Obj';
 import { Toggle } from './common';
-import type { RenderMode } from '@/store/settings';
 import { IconEye, IconFast, IconPause, IconPlay, IconSettings, IconWarning, IconChevron } from '@/ui/icons';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
 import { DragSheet, type Snap } from '@/ui/bet/DragSheet';
-import { Charts, EventsFeed, FollowCard, MomentIcon, MOMENT_TONE, MyEntries, PoolsTab, TimingTable, TowerStrip, momentText } from '@/ui/bet/livePanels';
+import { Charts, EventsFeed, FollowCard, MyEntries, PoolsTab, TimingTable, TowerStrip } from '@/ui/bet/livePanels';
+import { FlagPass, MomentBanner, MomentStack, useMomentFeed } from '@/ui/live/Moments';
+import { ViewSheet } from '@/ui/live/ViewSheet';
 import { CAMERA_ICON, FlagGlyph, IcChart, IcChat, IcCloud, IcList, IcRain, IcSun, IcTicket, IcTrophy, RcBadge } from '@/ui/bet/icons';
 import '@/styles/live.css';
 
@@ -26,8 +27,6 @@ import '@/styles/live.css';
 if (import.meta.env.DEV) Object.assign(window, { __pools: usePools, __wallet: useWallet });
 
 type Tab = 'pools' | 'timing' | 'events' | 'mine' | 'graphs';
-
-const CAMS: CameraMode[] = ['director', 'follow', 'tv', 'heli', 'onboard', 'orbit', 'overview'];
 
 function snapHeights(zone: number): Record<Snap, number> {
   const full = Math.max(320, zone);
@@ -72,6 +71,13 @@ export function LiveScreen() {
   useEffect(() => {
     if (!runner && !loading) void open(channelId, mode);
   }, [runner, loading, channelId, mode, open]);
+
+  useMomentFeed();
+  const showResults = useCallback(() => {
+    haptic.tap();
+    setTab('timing');
+    setSnap('half');
+  }, []);
 
   useEffect(() => {
     setSceneView({ layout: 'full', zone: null, frameZone: false, labels: [], cameraOverride: null, frozen: false });
@@ -147,7 +153,9 @@ export function LiveScreen() {
           }}
           aria-label={t('home.channels')}
         >
-          <span className="lv-session__flag">{flagEmoji(meta?.countryCode ?? '')}</span>
+          <span className="lv-session__flag">
+            <Flag cc={meta?.countryCode} size={22} />
+          </span>
           <span className="lv-session__text">
             <span className="lv-session__title">
               <span className="ellipsis">{channel.title[lang]}</span>
@@ -239,11 +247,14 @@ export function LiveScreen() {
         </div>
       )}
 
+      <MomentBanner />
+
       {live && <StartLights lights={live.lights} />}
+      <FlagPass />
 
       {/* Overlays stacked above the sheet: moments → replay → followed driver */}
       <div ref={aboveRef} className="lv-above">
-        <MomentStack />
+        <MomentStack onResults={showResults} />
         {mode === 'replay' && runner && <ReplayBar />}
         {follow && live && <FollowCard car={follow} cars={live.cars} quali={isQuali} onOpen={() => (haptic.tap(), setDriverPicker(true))} />}
       </div>
@@ -302,7 +313,9 @@ export function LiveScreen() {
             const active = ch.id === channelId;
             return (
               <div key={ch.id} className={`lv-ch ${active ? 'lv-ch--on' : ''}`}>
-                <span className="lv-ch__flag">{flagEmoji(m?.countryCode ?? '')}</span>
+                <span className="lv-ch__flag">
+                  <Flag cc={m?.countryCode} size={22} />
+                </span>
                 <div className="lv-ch__text">
                   <div className="lv-ch__title ellipsis">{ch.title[lang]}</div>
                   <div className="lv-ch__sub ellipsis">
@@ -406,71 +419,6 @@ function flagItems(live: LiveState): Array<{ key: string; tone: 'sc' | 'red' | '
   return out;
 }
 
-/** Everything about how the race is shown lives in one sheet behind the header's view button. */
-function ViewSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const camera = useSettings((s) => s.camera);
-  const renderMode = useSettings((s) => s.renderMode);
-  const showZones = useSettings((s) => s.showZones);
-  const setSettings = useSettings((s) => s.set);
-  const webglLost = useSceneView((s) => s.webglLost);
-  const can3d = !webglLost && webglAvailable();
-  return (
-    <Sheet open={open} onClose={onClose} title={t('lv.view.title')} label={t('lv.view.title')}>
-      <div className="lv-view">
-        {can3d && (
-          <Segmented<RenderMode>
-            label={t('lv.view.title')}
-            value={renderMode}
-            onChange={(v) => setSettings({ renderMode: v })}
-            options={[
-              { id: '3d', label: t('live.view3d') },
-              { id: '2d', label: t('live.view2d') },
-            ]}
-          />
-        )}
-        {can3d && renderMode === '3d' && (
-          <section className="lv-view__sec">
-            <h3 className="lv-view__h">{t('live.camera')}</h3>
-            <div className="lv-cam__grid" role="radiogroup" aria-label={t('live.camera')}>
-              {CAMS.map((c) => {
-                const I = CAMERA_ICON[c];
-                return (
-                  <button
-                    key={c}
-                    type="button"
-                    role="radio"
-                    aria-checked={camera === c}
-                    className={`lv-cam__item ${camera === c ? 'lv-cam__item--on' : ''}`}
-                    onClick={() => {
-                      haptic.impact('light');
-                      sfx.select();
-                      setSettings({ camera: c });
-                    }}
-                  >
-                    {I && <I size={20} />}
-                    <span>{t(`live.cam.${c}`)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
-        <div className="lv-view__row">
-          <span className="lv-view__txt">
-            <b>{t('lv.view.zones')}</b>
-            <small>{t('lv.view.zonesSub')}</small>
-          </span>
-          <Toggle on={showZones} label={t('live.zones')} onChange={(v) => setSettings({ showZones: v })} />
-        </div>
-        <section className="lv-view__sec">
-          <h3 className="lv-view__h">{t('live.directorPanel')}</h3>
-          <DirectorPanel onClose={onClose} />
-        </section>
-      </div>
-    </Sheet>
-  );
-}
-
 function StartLights({ lights }: { lights: number | 'off' }) {
   const [splash, setSplash] = useState(false);
   const prev = useRef<number | 'off'>(lights);
@@ -508,54 +456,6 @@ function StartLights({ lights }: { lights: number | 'off' }) {
         )}
       </AnimatePresence>
     </>
-  );
-}
-
-const BIG_KINDS = new Set<Moment['kind']>(['SC', 'VSC', 'RED', 'FINISH']);
-
-function MomentStack() {
-  const [items, setItems] = useState<Array<Moment & { big: boolean }>>([]);
-  const battles = useRef(0);
-  useEffect(
-    () =>
-      onMoment((m) => {
-        const { followId, rivalId } = useLive.getState();
-        const involved = m.drivers.some((d) => d === followId || d === rivalId);
-        if (m.kind === 'BATTLE' && !involved && battles.current++ % 2 === 1) return;
-        if (m.kind === 'TRACK_LIMITS' && !involved) return;
-        const big = (m.kind === 'OVERTAKE' && involved) || BIG_KINDS.has(m.kind);
-        if (m.kind === 'OVERTAKE' && involved) haptic.impact('medium');
-        else if (m.kind === 'SC' || m.kind === 'VSC' || m.kind === 'RED') {
-          haptic.notify('warning');
-          sfx.warn();
-        } else if ((m.kind === 'FASTEST_LAP' || m.kind === 'PIT') && involved) haptic.impact('light');
-        // One moment at a time: a new one replaces the previous.
-        setItems([{ ...m, big }]);
-        setTimeout(() => setItems((x) => x.filter((i) => i.id !== m.id)), big ? 4200 : 3200);
-      }),
-    [],
-  );
-  return (
-    <div className="lv-moments" aria-live="polite">
-      <AnimatePresence initial={false} mode="popLayout">
-        {items.map((m) => (
-          <motion.div
-            key={m.id}
-            className={`lv-moment ${m.big ? 'lv-moment--big' : ''} lv-moment--${m.kind.toLowerCase()}`}
-            style={{ ['--tone' as string]: MOMENT_TONE[m.kind] ?? 'var(--text-2)' }}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="lv-moment__icon">
-              <MomentIcon kind={m.kind} size={16} />
-            </span>
-            <span className="lv-moment__text">{momentText(m)}</span>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
   );
 }
 
@@ -600,61 +500,6 @@ function ReplayBar() {
       <button type="button" className="lv-replay__live" onClick={() => void open(channelId, 'live')}>
         <IconFast size={14} /> {t('live.goLive')}
       </button>
-    </div>
-  );
-}
-
-function DirectorPanel({ onClose }: { onClose: () => void }) {
-  const runner = useLive((s) => s.runner);
-  const sim = runner?.sim as unknown as { trigger?: (k: 'SC' | 'VSC' | 'RED' | 'RETIRE') => void } | undefined;
-  return (
-    <div className="lv-dir">
-      <p className="lv-dir__note">{t('app.demoNote')}</p>
-      <div className="lv-dir__grid">
-        {(['SC', 'VSC', 'RED'] as const).map((k) => (
-          <button
-            key={k}
-            type="button"
-            className="lv-dir__btn"
-            disabled={!sim?.trigger}
-            onClick={() => {
-              haptic.impact('medium');
-              sim?.trigger?.(k);
-              onClose();
-            }}
-          >
-            {k === 'RED' ? <FlagGlyph color="#ff3b47" size={20} /> : <RcBadge text={k} size={18} />}
-            <span>{t(`live.trigger.${k.toLowerCase()}`)}</span>
-          </button>
-        ))}
-        <button
-          type="button"
-          className="lv-dir__btn"
-          onClick={() => {
-            haptic.impact('medium');
-            runner?.setStale(true);
-            setTimeout(() => runner?.setStale(false), 12000);
-            onClose();
-          }}
-        >
-          <IconWarning size={20} />
-          <span>{t('live.trigger.stale')}</span>
-        </button>
-        <button
-          type="button"
-          className="lv-dir__btn"
-          onClick={() => {
-            getScene()?.loseContext();
-            onClose();
-          }}
-        >
-          <IconEye size={20} />
-          <span>{t('live.trigger.webgl')}</span>
-        </button>
-      </div>
-      <div className="lv-dir__foot">
-        <IconEye size={14} /> {t('live.approxNote')}
-      </div>
     </div>
   );
 }
