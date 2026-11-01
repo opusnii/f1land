@@ -4,12 +4,13 @@ import { useWallet } from '@/store/wallet';
 import { useRewards } from '@/store/rewards';
 import { useToasts } from '@/store/toasts';
 import { SubHeader } from '@/app/Header';
-import { Card, Segmented } from '@/ui/kit';
-import { IconEye, IconGlobe, IconInfo, IconLayers, IconMap, IconPlay, IconSound, IconSpark, IconTimer, IconVibrate, IconWarning, LogoPulse } from '@/ui/icons';
+import { Segmented } from '@/ui/kit';
+import { IconChevron, IconInfo, IconWarning, LogoPulse } from '@/ui/icons';
 import { t, type Lang } from '@/i18n/core';
 import { haptic, insideTelegram, setHapticsEnabled } from '@/telegram/sdk';
 import { setSoundEnabled, sfx } from '@/audio/sfx';
 import { PageHead, PortalSheet, Reveal, Toggle, useBack } from './common';
+import '@/styles/screens/settings.css';
 
 /** Applies persisted preferences to the haptics/sfx modules and the motion CSS hooks. */
 export function useApplySettings(): void {
@@ -25,29 +26,27 @@ export function useApplySettings(): void {
   }, [motion]);
 }
 
-function Row({ icon, title, sub, children, tone = 'lime' }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; children: ReactNode; tone?: string }) {
+/** One row style for the whole screen, matching the live "View" sheet: title + hint on the left, control on the right. */
+function Row({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children: ReactNode }) {
   return (
-    <div className="sc-set">
-      <span className={`sc-ic sc-ic--${tone}`}>{icon}</span>
-      <span className="sc-set__txt">
+    <div className="set-row">
+      <span className="set-row__txt">
         <b>{title}</b>
-        {sub && <span className="muted">{sub}</span>}
+        {sub && <small>{sub}</small>}
       </span>
       {children}
     </div>
   );
 }
 
-function Block({ icon, title, sub, children, tone = 'lime' }: { icon: ReactNode; title: ReactNode; sub?: ReactNode; children: ReactNode; tone?: string }) {
+/** Row whose control (a segmented choice) takes the full width under the title. */
+function Block({ title, sub, children }: { title: ReactNode; sub?: ReactNode; children: ReactNode }) {
   return (
-    <div className="sc-set sc-set--block">
-      <div className="sc-set__head">
-        <span className={`sc-ic sc-ic--${tone}`}>{icon}</span>
-        <span className="sc-set__txt">
-          <b>{title}</b>
-          {sub && <span className="muted">{sub}</span>}
-        </span>
-      </div>
+    <div className="set-row set-row--block">
+      <span className="set-row__txt">
+        <b>{title}</b>
+        {sub && <small>{sub}</small>}
+      </span>
       {children}
     </div>
   );
@@ -75,8 +74,9 @@ export function SettingsScreen() {
       <PageHead title={t('settings.title')} />
 
       <Reveal i={0} className="section">
-        <div className="sc-set-group">
-          <Block icon={<IconGlobe size={18} />} title={t('settings.language')} tone="cyan">
+        <h2 className="set-h">{t('pv2.set.lang')}</h2>
+        <div className="card set-group">
+          <div className="set-row set-row--block">
             <Segmented<Lang>
               label={t('settings.language')}
               value={s.lang}
@@ -86,14 +86,14 @@ export function SettingsScreen() {
                 { id: 'en', label: 'English' },
               ]}
             />
-          </Block>
+          </div>
         </div>
       </Reveal>
 
       <Reveal i={1} className="section">
-        <div className="sc-set-title">{t('settings.graphics')}</div>
-        <div className="sc-set-group">
-          <Block icon={<IconLayers size={18} />} title={t('settings.quality')} sub={s.quality === 'auto' ? t('scr.settings.autoIs', { q: t(`settings.q.${resolved}`) }) : t('scr.settings.qualitySub')}>
+        <h2 className="set-h">{t('pv2.set.view')}</h2>
+        <div className="card set-group">
+          <Block title={t('settings.quality')} sub={s.quality === 'auto' ? t('scr.settings.autoIs', { q: t(`settings.q.${resolved}`) }) : t('scr.settings.qualitySub')}>
             <Segmented<QualitySetting>
               label={t('settings.quality')}
               value={s.quality}
@@ -101,18 +101,18 @@ export function SettingsScreen() {
               options={(['auto', 'low', 'medium', 'high'] as const).map((q) => ({ id: q, label: t(`settings.q.${q}`) }))}
             />
           </Block>
-          <Block icon={<IconMap size={18} />} title={t('settings.render')} sub={s.renderMode === '3d' ? t('scr.settings.render3d') : t('scr.settings.render2d')} tone="cyan">
+          <Block title={t('settings.render')} sub={s.renderMode === '3d' ? t('scr.settings.render3d') : t('scr.settings.render2d')}>
             <Segmented<RenderMode>
               label={t('settings.render')}
               value={s.renderMode}
               onChange={(renderMode) => s.set({ renderMode })}
               options={[
-                { id: '3d', label: '3D' },
-                { id: '2d', label: '2D' },
+                { id: '3d', label: t('live.view3d') },
+                { id: '2d', label: t('live.view2d') },
               ]}
             />
           </Block>
-          <Block icon={<IconSpark size={18} />} title={t('settings.motion')} sub={`${t(`settings.m.${s.motion}`)} · ${t('scr.settings.motionSub')}`} tone="purple">
+          <Block title={t('settings.motion')} sub={t('scr.settings.motionSub')}>
             <Segmented<MotionSetting>
               label={t('settings.motion')}
               value={s.motion}
@@ -120,13 +120,16 @@ export function SettingsScreen() {
               options={(['system', 'reduced', 'full'] as const).map((m) => ({ id: m, label: t(`scr.settings.m.${m}`) }))}
             />
           </Block>
+          <Row title={t('settings.zones')} sub={t('scr.settings.zonesSub')}>
+            <Toggle on={s.showZones} label={t('settings.zones')} onChange={(showZones) => s.set({ showZones })} />
+          </Row>
         </div>
       </Reveal>
 
       <Reveal i={2} className="section">
-        <div className="sc-set-title">{t('scr.settings.feedback')}</div>
-        <div className="sc-set-group">
-          <Row icon={<IconVibrate size={18} />} title={t('settings.haptics')} sub={t('scr.settings.hapticsSub')} tone="orange">
+        <h2 className="set-h">{t('scr.settings.feedback')}</h2>
+        <div className="card set-group">
+          <Row title={t('settings.haptics')} sub={t('scr.settings.hapticsSub')}>
             <Toggle
               on={s.haptics}
               label={t('settings.haptics')}
@@ -137,7 +140,7 @@ export function SettingsScreen() {
               }}
             />
           </Row>
-          <Row icon={<IconSound size={18} />} title={t('settings.sound')} sub={t('scr.settings.soundSub')} tone="cyan">
+          <Row title={t('settings.sound')} sub={t('scr.settings.soundSub')}>
             <Toggle
               on={s.sound}
               label={t('settings.sound')}
@@ -148,16 +151,13 @@ export function SettingsScreen() {
               }}
             />
           </Row>
-          <Row icon={<IconEye size={18} />} title={t('settings.zones')} sub={t('scr.settings.zonesSub')}>
-            <Toggle on={s.showZones} label={t('settings.zones')} onChange={(showZones) => s.set({ showZones })} />
-          </Row>
         </div>
       </Reveal>
 
       <Reveal i={3} className="section">
-        <div className="sc-set-title">{t('rem.group')}</div>
-        <div className="sc-set-group">
-          <Block icon={<IconTimer size={18} />} title={t('rem.setting')} sub={s.reminderMin === 0 ? t('rem.sub.off') : t('rem.sub.on', { n: s.reminderMin })} tone="cyan">
+        <h2 className="set-h">{t('rem.group')}</h2>
+        <div className="card set-group">
+          <Block title={t('rem.setting')} sub={s.reminderMin === 0 ? t('rem.sub.off') : t('rem.sub.on', { n: s.reminderMin })}>
             <Segmented<`${ReminderSetting}`>
               label={t('rem.setting')}
               value={`${s.reminderMin}`}
@@ -172,43 +172,41 @@ export function SettingsScreen() {
       </Reveal>
 
       <Reveal i={4} className="section">
-        <div className="sc-set-title">{t('settings.about')}</div>
-        <Card className="sc-about" pad>
-          <div className="sc-about__brand">
-            <LogoPulse className="brand__logo" />
-            <div>
+        <h2 className="set-h">{t('settings.about')}</h2>
+        <div className="card set-group">
+          <div className="set-about">
+            <LogoPulse className="set-about__logo" />
+            <span className="set-row__txt">
               <b>
                 PULSE <span className="lime">ARENA</span>
               </b>
-              <span className="muted">
-                {t('app.module')} · DEMO · v1.0.0
-              </span>
-            </div>
+              <small>{t('app.module')} · DEMO · v1.0.0</small>
+            </span>
             <span className={`badge ${insideTelegram() ? 'badge--cyan' : 'badge--ghost'}`}>{insideTelegram() ? 'Telegram' : t('scr.settings.browser')}</span>
           </div>
-          <p>{t('app.demoNote')}</p>
-          <p className="muted">{t('settings.attribution')}</p>
-        </Card>
-        <button
-          className="sc-menu"
-          onClick={() => {
-            haptic.tap();
-            s.set({ onboarded: false });
-          }}
-        >
-          <span className="sc-ic sc-ic--lime">
-            <IconPlay size={18} />
-          </span>
-          <span className="sc-menu__txt">
-            <span className="sc-menu__t">{t('scr.settings.tour')}</span>
-            <span className="sc-menu__s">{t('scr.settings.tourSub')}</span>
-          </span>
-        </button>
+          <p className="set-about__txt">{t('pv2.demo')}</p>
+          <p className="set-about__txt set-about__txt--muted">{t('settings.attribution')}</p>
+          <button
+            type="button"
+            className="set-row set-row--link"
+            onClick={() => {
+              haptic.tap();
+              s.set({ onboarded: false });
+            }}
+          >
+            <span className="set-row__txt">
+              <b>{t('scr.settings.tour')}</b>
+              <small>{t('scr.settings.tourSub')}</small>
+            </span>
+            <IconChevron size={16} className="icon muted" />
+          </button>
+        </div>
       </Reveal>
 
       <Reveal i={5} className="section">
         <button
-          className="sc-danger"
+          type="button"
+          className="set-danger"
           onClick={() => {
             haptic.impact('medium');
             setConfirm(true);
@@ -223,8 +221,8 @@ export function SettingsScreen() {
       </Reveal>
 
       <PortalSheet open={confirm} onClose={() => setConfirm(false)} label={t('settings.reset')} title={t('settings.reset')}>
-        <div className="sc-confirm">
-          <span className="sc-confirm__ic">
+        <div className="set-confirm">
+          <span className="set-confirm__ic">
             <IconWarning size={28} />
           </span>
           <p>{t('scr.settings.resetBody')}</p>
@@ -232,7 +230,7 @@ export function SettingsScreen() {
             <button className="btn btn--ghost" onClick={() => setConfirm(false)}>
               {t('ui.cancel')}
             </button>
-            <button className="btn sc-btn-danger" onClick={reset}>
+            <button className="btn set-btn-danger" onClick={reset}>
               {t('scr.settings.resetConfirm')}
             </button>
           </div>

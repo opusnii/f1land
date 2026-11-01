@@ -26,8 +26,12 @@ import { registerFeatureDicts } from '@/i18n/extra';
 import { initTelegram, setBackButton } from '@/telegram/sdk';
 import '@/styles/app.css';
 import '@/styles/restored.css';
+import '@/styles/system.css';
 // After app.css so screen styles win ties in the cascade.
 import '@/styles/screens.css';
+// Per-area screen styles, global and in this order so the cascade matches the former single file.
+import '@/styles/screens/races.css';
+import '@/styles/screens/profile.css';
 
 /* Core flows (Home, Live, Pool, My Pools) ship in the entry chunk; the rest load on demand. */
 const SCREEN_CHUNKS = {

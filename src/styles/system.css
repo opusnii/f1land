@@ -1,0 +1,490 @@
+/* ------------------------------------------------------------------ */
+/* Design system v2 primitives (docs/design/02-spec-and-plan.md §2–8)   */
+/* Loaded after app.css and before screen styles.                       */
+/* ------------------------------------------------------------------ */
+
+/* Art (S3) ----------------------------------------------------------- */
+:where(.art) {
+  position: relative;
+  overflow: hidden;
+  background: var(--art-c, #10161a);
+  isolation: isolate;
+}
+.art picture {
+  display: contents;
+}
+.art__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity var(--dur-3) var(--ease-out);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.art__img[data-loaded='1'] {
+  opacity: 1;
+}
+.art--scrim-b::after,
+.art--scrim-l::after,
+.art--scrim-r::after,
+.art--scrim-full::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+.art--scrim-b::after {
+  background: var(--scrim-b);
+}
+.art--scrim-l::after {
+  background: var(--scrim-l);
+}
+.art--scrim-r::after {
+  background: var(--scrim-r);
+}
+.art--scrim-full::after {
+  background: rgba(7, 9, 11, 0.62);
+}
+
+/* Hero plate --------------------------------------------------------- */
+:where(.hero-plate) {
+  position: relative;
+  border-radius: var(--r-hero);
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    var(--rim),
+    0 0 0 1px var(--s1-stroke);
+}
+.hero-plate__art {
+  position: absolute;
+  inset: 0;
+}
+.hero-plate__layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+.hero-plate__layer > * {
+  pointer-events: auto;
+}
+.hero-plate__body {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+}
+
+/* Objects, cars, helmets, flags ------------------------------------- */
+:where(.obj) {
+  display: inline-block;
+  flex: none;
+  line-height: 0;
+}
+.obj img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+:where(.car-art) {
+  display: block;
+  flex: none;
+  line-height: 0;
+}
+.car-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 12px rgba(0, 0, 0, 0.55));
+}
+.car-art--mirror img {
+  transform: scaleX(-1);
+}
+:where(.flag-img) {
+  display: inline-block;
+  flex: none;
+  vertical-align: -0.12em;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  object-fit: cover;
+}
+.flag-img--none {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+:where(.helmet) {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(120% 90% at 50% 105%, color-mix(in srgb, var(--team) 38%, transparent) 0%, transparent 62%),
+    #0c1115;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.helmet__obj {
+  transform: translate(2%, 3%);
+}
+.helmet--ring {
+  box-shadow:
+    inset 0 0 0 1.5px var(--team),
+    0 0 0 2px rgba(7, 9, 11, 0.9);
+}
+.helmet__num {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 6px;
+  background: #0a0e11;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--team) 70%, transparent);
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+  color: var(--text);
+}
+
+/* Display type ------------------------------------------------------- */
+:where(.display-title) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 0.95;
+  text-wrap: balance;
+}
+.display-title--sm {
+  font-size: var(--fs-xl);
+}
+.display-title--md {
+  font-size: 28px;
+}
+.display-title--lg {
+  font-size: var(--fs-3xl);
+}
+.display-title__icon {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  color: var(--lime);
+}
+
+:where(.tagline) {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--lime);
+  transform: rotate(-4deg);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+/* Technical label: only LIVE, LAP, SC/VSC, S1–S3, "Locks in", ticket field labels. */
+:where(.techlabel) {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Status chip -------------------------------------------------------- */
+:where(.status-chip) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-chip);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-2);
+}
+.status-chip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+.status-chip--live {
+  color: var(--lime);
+  background: rgba(198, 255, 61, 0.1);
+}
+.status-chip--live .status-chip__dot {
+  animation: pulse-dot 1.6s var(--ease-out) infinite;
+}
+.status-chip--warn,
+.status-chip--void {
+  color: var(--yellow);
+  background: rgba(255, 209, 46, 0.1);
+}
+.status-chip--resolving {
+  color: var(--cyan);
+  background: rgba(47, 230, 255, 0.1);
+}
+.status-chip--resolving .status-chip__dot {
+  background: none;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.9s linear infinite;
+}
+.status-chip--locked,
+.status-chip--muted {
+  color: var(--text-2);
+}
+.status-chip--settled {
+  color: var(--text);
+}
+
+/* Lock timer --------------------------------------------------------- */
+:where(.lock-timer) {
+  --lt: var(--text-2);
+  --lt-arc: var(--lime);
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  color: var(--lt);
+}
+.lock-timer--warn {
+  --lt: var(--orange);
+  --lt-arc: var(--orange);
+}
+.lock-timer--urgent {
+  --lt: var(--red);
+  --lt-arc: var(--red);
+}
+.lock-timer--closed {
+  --lt: var(--muted);
+  --lt-arc: transparent;
+}
+.lock-timer__track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 2.5;
+}
+.lock-timer__arc {
+  fill: none;
+  stroke: var(--lt-arc);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset 0.25s linear,
+    stroke var(--dur-2);
+}
+.lock-timer--pill {
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 12px 6px 8px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: var(--rim);
+}
+.lock-timer--pill.lock-timer--closed {
+  gap: 6px;
+  padding: 0 12px;
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+.lock-timer__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+.lock-timer__text small {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lock-timer--warn .lock-timer__text small,
+.lock-timer--urgent .lock-timer__text small {
+  color: var(--lt);
+}
+.lock-timer__text b {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  color: var(--text);
+}
+.lock-timer--urgent .lock-timer__text b,
+.lock-timer--warn .lock-timer__text b {
+  color: var(--lt);
+}
+.lock-timer--urgent .lock-timer__v {
+  display: inline-block;
+  animation: lt-tick 1s var(--ease-out);
+}
+@keyframes lt-tick {
+  0% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.lock-timer--ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+}
+.lock-timer--ring > svg:first-child {
+  position: absolute;
+  inset: 0;
+}
+.lock-timer--ring .lock-timer__v {
+  position: relative;
+  font-weight: 700;
+  color: var(--lt);
+}
+.lock-timer--ring.lock-timer--calm .lock-timer__v {
+  color: var(--text);
+}
+.lock-timer__lock {
+  position: relative;
+}
+
+/* S2 tile ------------------------------------------------------------ */
+:where(.tile) {
+  position: relative;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+  transition:
+    background-color var(--dur-2) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out),
+    opacity var(--dur-2);
+}
+.tile[aria-checked='true'],
+.tile[aria-pressed='true'],
+.tile.is-sel {
+  background: var(--s2-sel);
+  box-shadow:
+    inset 0 0 0 1.5px var(--lime),
+    var(--glow-sel);
+}
+
+/* Empty state -------------------------------------------------------- */
+:where(.empty-state) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--sp-5) var(--sp-4) var(--sp-6);
+}
+.empty-state__art {
+  margin-bottom: var(--sp-3);
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.6));
+}
+.empty-state__title {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  text-wrap: balance;
+}
+.empty-state__body {
+  margin: 6px 0 0;
+  max-width: 30ch;
+  font-size: var(--fs-sm);
+  color: var(--text-2);
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.empty-state__action {
+  margin-top: var(--sp-4);
+}
+.empty-state__tagline {
+  margin-top: var(--sp-4);
+  transform-origin: center;
+}
+.empty-state--compact {
+  padding: var(--sp-4) var(--sp-3);
+}
+
+/* Neon track (spec §7.1) -------------------------------------------- */
+.trackmap--neon {
+  overflow: visible;
+}
+.trackmap__glass {
+  fill: rgba(9, 13, 16, 0.82);
+  stroke-width: 0.9;
+}
+.trackmap__callout {
+  font-family: var(--font);
+  font-weight: 600;
+  fill: #f1f5f7;
+  letter-spacing: 0.02em;
+}
+.trackmap__tag {
+  font-family: var(--font-num);
+  font-size: 8.5px;
+  font-weight: 700;
+  fill: #f1f5f7;
+}
+.trackmap__corner {
+  font-family: var(--font-num);
+  font-size: 7px;
+  font-weight: 600;
+  fill: rgba(255, 255, 255, 0.6);
+}
+
+/* Logo lockup -------------------------------------------------------- */
+:where(.logo-lockup) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.logo-lockup__mark {
+  width: 34px;
+  height: 26px;
+  flex: none;
+}
+.logo-lockup__word {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 900;
+  font-size: 19px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.logo-lockup__word b {
+  font-weight: 900;
+  color: var(--lime);
+}
+
+/* Skeleton: one shape language, highlight sweep 1.2 s. */
+:where(.skel) {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--r-tile);
+  background: rgba(255, 255, 255, 0.05);
+}
+.skel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.06) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: btn-sweep 1.2s var(--ease-out) infinite;
+}

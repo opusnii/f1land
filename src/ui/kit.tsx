@@ -1,4 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Helmet } from './Helmet';
 import { AnimatePresence, motion } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { DRIVER_BY_ID, TEAM_BY_ID } from '@/data/teams';
@@ -180,8 +181,13 @@ export function Countdown({ ms, label, locked, lockedLabel }: { ms: number; labe
 /* Drivers                                                             */
 /* ------------------------------------------------------------------ */
 
-/** Stylised helmet avatar in team colours (no photos). */
+/** Driver avatar: team helmet render with the race number (no photos, no faces). */
 export function DriverAvatar({ id, size = 40, ring }: { id: string; size?: number; ring?: boolean }) {
+  return <Helmet driverId={id} size={size} ring={ring} />;
+}
+
+/** Inline-SVG helmet: fallback for SVG contexts (maps, canvases) where a raster helmet can't be nested. */
+export function DriverAvatarSvg({ id, size = 40, ring }: { id: string; size?: number; ring?: boolean }) {
   const d = DRIVER_BY_ID[id];
   const team = d ? TEAM_BY_ID[d.teamId] : undefined;
   const c1 = team?.livery.primary ?? '#888';

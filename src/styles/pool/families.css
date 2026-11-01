@@ -1,0 +1,1267 @@
+/* Pool infographics (spec §9.3): the shared S1 panel, driver strip and the nine family layouts.
+   Imported by src/ui/bet/families/common.tsx. Reusable viz (GapMeter, StintBar, EventTimeline) lives in viz.css. */
+
+/* ---------- Shared panel ---------- */
+.pv {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+}
+.pv__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+.pv__t {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-2);
+}
+.pv__t b {
+  color: var(--text);
+  font-weight: 600;
+}
+.pv__aside {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+/* Section label inside a panel: sentence case, never a tech label. */
+.pv-label {
+  margin-top: var(--sp-1);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pv-sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px var(--sp-3);
+  margin-top: var(--sp-1);
+}
+.pv-sub__t {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pv-sub__r {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.pv-src {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+.pv-src::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cyan);
+  flex: none;
+}
+.pv-empty,
+.pv-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.pv-empty {
+  padding: var(--sp-3);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  text-align: center;
+}
+.pv-axis {
+  margin: 0 0 calc(-1 * var(--sp-1));
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+
+/* Driver strip: helmet · name / #number · team · key figure */
+.dstrip {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.dstrip__who {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.dstrip__name {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.dstrip__sub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.3;
+}
+.dstrip__num {
+  padding-right: 8px;
+  border-right: 2px solid var(--team);
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Tyre + age (pit, tyre) */
+.pv-tyre {
+  display: inline-flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+
+/* Flat rows inside a panel (pit candidates, best laps) */
+.pv-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.pv-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 44px;
+  padding: 4px var(--sp-3) 4px 4px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: inset 2px 0 0 var(--team, transparent);
+}
+.pv-row__n {
+  width: 18px;
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+.pv-row__code {
+  min-width: 38px;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.pv-row__v {
+  margin-left: auto;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.pv-row .pv-tyre {
+  flex-direction: row;
+  gap: 6px;
+}
+.wearbar {
+  position: relative;
+  flex: 1;
+  min-width: 40px;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.wearbar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--yellow);
+}
+
+/* Threshold band (pit) */
+.pv-band {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+}
+.pv-band__t {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.pv-band__t small {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.pv-band__t b {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.pv-band__k {
+  flex: none;
+  max-width: 40%;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  text-align: right;
+  line-height: 1.3;
+}
+
+/* ---------- Zone: driver card + where they are now ---------- */
+.zinfo {
+  gap: var(--sp-4);
+}
+.zinfo__chg {
+  flex: none;
+  gap: 6px;
+  height: 44px;
+  padding: 0 14px;
+  border-radius: var(--r-tile);
+}
+.zinfo__now {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: end;
+  gap: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--stroke);
+}
+.zinfo__pos {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.zinfo__pos b {
+  font-size: var(--fs-3xl);
+  font-weight: 600;
+  line-height: 1;
+}
+.zinfo__pos small,
+.zinfo__where > small {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.3;
+}
+.zinfo__pos small .num {
+  color: var(--text);
+  font-weight: 600;
+}
+.zinfo__where {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.zinfo__secs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.zinfo__secs li {
+  display: grid;
+  place-items: center;
+  height: 32px;
+  border-radius: var(--r-chip);
+  background: var(--s2);
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--zc) 45%, transparent);
+}
+.zinfo__secs li .techlabel {
+  color: var(--muted);
+}
+.zinfo__secs li.is-on {
+  background: color-mix(in srgb, var(--zc) 16%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--zc);
+}
+.zinfo__secs li.is-on .techlabel {
+  color: var(--zc);
+}
+.zinfo__occ {
+  color: var(--cyan);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.zinfo__empty {
+  margin: 0;
+  padding: var(--sp-5) 0;
+  color: var(--muted);
+  font-size: var(--fs-md);
+  text-align: center;
+}
+.zinfo__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.zinfo__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 56px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+  color: var(--text);
+  text-align: left;
+}
+.zinfo__row:active {
+  background: rgba(255, 255, 255, 0.08);
+}
+.zinfo__row > svg {
+  color: var(--muted);
+  flex: none;
+}
+.zinfo__row-t {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.zinfo__row-t b {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.zinfo__row-t small {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+
+/* ---------- Position: "now P5" + P1…Pn ladder ---------- */
+.posinfo {
+  gap: var(--sp-2);
+}
+.posinfo__top {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.posinfo__top .dstrip {
+  flex: 1;
+}
+.posinfo__now {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.posinfo__now small {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.posinfo__now b {
+  font-size: var(--fs-3xl);
+  font-weight: 600;
+  line-height: 1;
+}
+.ladder {
+  display: grid;
+  grid-template-columns: repeat(var(--n, 20), minmax(0, 1fr));
+  align-items: end;
+  gap: 2px;
+  height: 64px;
+  margin: var(--sp-1) 0 0;
+  padding: 10px 0 18px;
+  list-style: none;
+}
+.ladder__p {
+  position: relative;
+  height: 22px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
+}
+.ladder__p.is-pod {
+  background: rgba(255, 255, 255, 0.14);
+}
+.ladder__p .num {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.ladder__p.is-grid::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border: 1.5px solid var(--text-2);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+.ladder__p.is-now {
+  height: 36px;
+  background: var(--team);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--team) 60%, transparent);
+}
+.ladder__p.is-now .num {
+  color: var(--text);
+  font-weight: 700;
+}
+.ladder__p.is-now.is-grid::before {
+  bottom: calc(100% + 6px);
+}
+.posinfo__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px var(--sp-3);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.posinfo__foot b {
+  color: var(--text);
+  font-weight: 600;
+}
+.posinfo__legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.posinfo__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.posinfo__dot--grid {
+  border: 1.5px solid var(--text-2);
+}
+
+/* ---------- Duel: two driver cards + cars nose to nose ---------- */
+.duel2 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.duel2__cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.duel2__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'num helmet'
+    'first first'
+    'last last'
+    'team team'
+    'meta meta';
+  align-items: start;
+  min-width: 0;
+  padding: var(--sp-3);
+  overflow: hidden;
+  border: 1px solid var(--s1-stroke);
+  border-radius: var(--r-card);
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--team) 22%, transparent) 0%, transparent 55%),
+    var(--s1);
+  box-shadow:
+    var(--rim),
+    inset 0 2px 0 color-mix(in srgb, var(--team) 80%, transparent);
+}
+.duel2__card--b {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'helmet num'
+    'first first'
+    'last last'
+    'team team'
+    'meta meta';
+  background:
+    linear-gradient(200deg, color-mix(in srgb, var(--team) 22%, transparent) 0%, transparent 55%),
+    var(--s1);
+  text-align: right;
+}
+.duel2__num {
+  grid-area: num;
+  font-family: var(--font-display);
+  font-size: var(--fs-3xl);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1;
+  color: color-mix(in srgb, var(--team) 55%, var(--text));
+}
+.duel2__card .helmet {
+  grid-area: helmet;
+}
+.duel2__first {
+  grid-area: first;
+  margin-top: var(--sp-2);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.2;
+}
+.duel2__last {
+  grid-area: last;
+  font-family: var(--font-display);
+  font-size: var(--fs-xl);
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.duel2__team {
+  grid-area: team;
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.duel2__meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--sp-2);
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--stroke);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.duel2__card--b .duel2__meta {
+  justify-content: flex-end;
+}
+.duel2__pos {
+  color: var(--text);
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.duel2__stage {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-3) var(--sp-3);
+  overflow: hidden;
+  border: 1px solid var(--s1-stroke);
+  border-radius: var(--r-card);
+  background:
+    radial-gradient(60% 70% at 50% -10%, rgba(255, 255, 255, 0.09), transparent 70%),
+    linear-gradient(180deg, #0f161a 0%, #0b1013 58%, #10171b 100%);
+  box-shadow: var(--rim);
+}
+/* Asphalt under the cars, faint team tint at each side */
+.duel2__stage::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 50%;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--ta, transparent) 9%, transparent), transparent 35%, transparent 65%, color-mix(in srgb, var(--tb, transparent) 9%, transparent)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+}
+.duel2__cars {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  width: 100%;
+}
+.duel2__car {
+  max-width: calc(50% - 4px);
+}
+.duel2__car img {
+  object-position: center bottom;
+}
+/* Noses toward the centre when the box is wider than the render */
+.duel2__car--a img {
+  object-position: right bottom;
+}
+.duel2__car--b img {
+  object-position: left bottom;
+}
+.duel2__stage .gapm {
+  position: relative;
+  max-width: 280px;
+}
+.duel2__ahead {
+  position: relative;
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+
+/* ---------- Pit: pit-lane plate + scheme, tyres, thresholds ---------- */
+.pitinfo {
+  padding-top: 0;
+}
+.pitinfo__plate {
+  position: relative;
+  height: 132px;
+  margin: 0 calc(-1 * var(--sp-4));
+  overflow: hidden;
+}
+.pitinfo__art {
+  position: absolute;
+  inset: 0;
+}
+.pitinfo__plate::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, #0f151a);
+  pointer-events: none;
+}
+.pitscheme {
+  position: absolute;
+  inset: var(--sp-3) var(--sp-4) var(--sp-3);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.pitscheme__k {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: var(--r-chip);
+  background: var(--s1-glass);
+  color: var(--text-2);
+}
+.pitscheme__road {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+.pitscheme__line {
+  position: absolute;
+  top: 13px;
+  left: 18px;
+  right: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.16);
+}
+.pitscheme--lane .pitscheme__line {
+  background: var(--lime);
+}
+.pitscheme--entry .pitscheme__line {
+  background: linear-gradient(90deg, var(--lime) 0 22%, rgba(255, 255, 255, 0.16) 22%);
+}
+.pitscheme__node {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 30px;
+}
+.pitscheme__dot {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: #0c1115;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.22);
+  color: var(--muted);
+}
+.pitscheme__label {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: rgba(7, 9, 11, 0.7);
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pitscheme__node.is-on .pitscheme__dot {
+  box-shadow: inset 0 0 0 2px var(--lime);
+  color: var(--lime);
+}
+.pitscheme__node.is-on .pitscheme__label {
+  color: var(--lime);
+}
+
+/* ---------- Tyres: stints + degradation ---------- */
+.tyreinfo {
+  gap: var(--sp-2);
+}
+.tyreinfo .pv-sub {
+  margin-top: var(--sp-3);
+}
+.tyreinfo__chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.tyreinfo__chart .lc {
+  margin: 0 calc(-1 * var(--sp-1));
+}
+.tyreinfo__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
+}
+.pv-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--sp-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+.pv-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pv-legend i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.tyreinfo__foot .pv-axis {
+  margin: 0;
+}
+
+/* ---------- Pace: delta large, last five laps ---------- */
+.pace2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--stroke);
+}
+.pace2__big {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.pace2__big small {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.3;
+}
+.pace2__big b {
+  font-size: var(--fs-3xl);
+  font-weight: 600;
+  line-height: 1;
+}
+.pace2__refs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding-left: var(--sp-3);
+  border-left: 1px solid var(--stroke);
+}
+.pace2__refs dt {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+}
+.pace2__refs dd {
+  margin: 0;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.pace2:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+/* Session-wide pools (no driver): the references span the panel */
+.pace2__refs:only-child {
+  grid-column: 1 / -1;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-5);
+  padding-left: 0;
+  border-left: 0;
+}
+.pace2__refs dd.pace2__who {
+  color: var(--text-2);
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+}
+.paceinfo .purple {
+  color: var(--purple);
+}
+.lapbars {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lapbars__row {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 72px 52px;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 28px;
+  font-size: var(--fs-sm);
+}
+.lapbars__lap {
+  color: var(--muted);
+  white-space: nowrap;
+}
+.lapbars__bar {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.lapbars__bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.32);
+}
+.lapbars__t {
+  color: var(--text);
+  font-weight: 600;
+  text-align: right;
+}
+.lapbars__d {
+  color: var(--text-2);
+  text-align: right;
+}
+.lapbars__row.is-best .lapbars__bar i {
+  background: var(--green);
+}
+.lapbars__row.is-best .lapbars__t {
+  color: var(--green);
+}
+.lapbars__row.is-fastest .lapbars__bar i {
+  background: var(--purple);
+}
+.lapbars__row.is-fastest .lapbars__t {
+  color: var(--purple);
+}
+.sectors3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+.sectors3__c {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: inset 0 2px 0 color-mix(in srgb, var(--zc) 60%, transparent);
+}
+.sectors3__c b {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+.sectors3__c.is-on {
+  background: color-mix(in srgb, var(--zc) 12%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--zc);
+}
+.sectors3__c.is-on .techlabel {
+  color: var(--zc);
+}
+.sectors3__band {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.sectors3__band b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---------- Incident: track status + race-control timeline ---------- */
+.incinfo {
+  gap: var(--sp-2);
+}
+.incinfo .pv-label {
+  margin-top: var(--sp-2);
+}
+.incinfo__state {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3) var(--sp-2) var(--sp-2);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+}
+.incinfo__state-t {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.incinfo__state-t b {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.incinfo__left {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding-left: var(--sp-3);
+  border-left: 1px solid var(--stroke);
+}
+.incinfo__left b {
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: 1;
+}
+.incinfo__left small {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+}
+
+/* ---------- Qualifying: order around the elimination line ---------- */
+.qinfo {
+  gap: var(--sp-2);
+}
+.qinfo__seg {
+  color: var(--text);
+}
+.qinfo__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.qinfo__row {
+  display: grid;
+  grid-template-columns: 26px 26px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  padding: 0 var(--sp-3) 0 var(--sp-2);
+  border-radius: var(--r-chip);
+}
+.qinfo__p {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+.qinfo__code {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.qinfo__lap {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.qinfo__row.is-out .qinfo__p,
+.qinfo__row.is-out .qinfo__code {
+  color: var(--muted);
+}
+.qinfo__row.is-out .qinfo__p {
+  color: color-mix(in srgb, var(--red) 75%, var(--text));
+}
+.qinfo__row.is-me {
+  background: var(--s2);
+  box-shadow: inset 2px 0 0 var(--team), var(--rim);
+}
+.qinfo__row.is-me .qinfo__code,
+.qinfo__row.is-me .qinfo__lap {
+  color: var(--text);
+}
+.qinfo__cut {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin: 4px 0;
+  color: var(--red);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.qinfo__cut::before,
+.qinfo__cut::after {
+  content: '';
+  flex: 1;
+  height: 0;
+  border-top: 1.5px dashed color-mix(in srgb, var(--red) 70%, transparent);
+}
+.qinfo__me {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px var(--sp-3);
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.qinfo__me > b {
+  font-size: var(--fs-md);
+}
+.qinfo__me.is-in > b {
+  color: var(--green);
+}
+.qinfo__me.is-out > b {
+  color: var(--red);
+}
+.qinfo__me span b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ---------- Combo: vertical chain + total ---------- */
+.combo2 {
+  gap: var(--sp-4);
+}
+.combo2__chain {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* The rail joining the nodes */
+.combo2__chain::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  bottom: 28px;
+  left: 11px;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(180deg, rgba(198, 255, 61, 0.5), rgba(47, 230, 255, 0.5));
+}
+.combo2__leg {
+  --leg: var(--text-2);
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 44px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-3);
+  min-height: 68px;
+  padding: 10px var(--sp-3) 10px 0;
+}
+/* Leg tile behind icon · pick · status; the node stays on the rail */
+.combo2__leg::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 0 calc(24px + var(--sp-3) - 10px);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+}
+.combo2__leg > * {
+  position: relative;
+  z-index: 1;
+}
+.combo2__node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1.5px var(--lime);
+  color: var(--lime);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.combo2__leg:nth-child(even) .combo2__node {
+  box-shadow: inset 0 0 0 1.5px var(--cyan);
+  color: var(--cyan);
+}
+.combo2__ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-tile);
+  background: color-mix(in srgb, var(--leg) 10%, rgba(255, 255, 255, 0.03));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--leg) 40%, transparent);
+  color: var(--leg);
+}
+.combo2__text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.combo2__kind {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+.combo2__text b {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.combo2__drv {
+  color: var(--text-2);
+  font-family: var(--font-num);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.combo2__now {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  max-width: 76px;
+  color: var(--muted);
+  text-align: center;
+}
+.combo2__now small {
+  font-size: 11px;
+  line-height: 1.2;
+}
+.combo2__now.is-yes {
+  color: var(--green);
+}
+.combo2__now.is-no {
+  color: color-mix(in srgb, var(--red) 80%, var(--text));
+}
+.combo2__now svg {
+  box-sizing: content-box;
+  padding: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, currentColor 16%, transparent);
+}
+.combo2__total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-tile);
+  background:
+    linear-gradient(90deg, rgba(198, 255, 61, 0.08), transparent 70%),
+    var(--s2);
+  box-shadow: var(--rim), inset 0 0 0 1px rgba(198, 255, 61, 0.18);
+}
+.combo2__total-t {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.combo2__total-t small {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+.combo2__total-t span {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  line-height: 1.3;
+}
+.combo2__total b {
+  flex: none;
+  color: var(--lime);
+  font-size: var(--fs-3xl);
+  font-weight: 600;
+  line-height: 1;
+}
+
+@media (max-width: 359px) {
+  .pv {
+    padding: var(--sp-3);
+  }
+  .pitinfo {
+    padding-top: 0;
+  }
+  .pitinfo__plate {
+    margin: 0 calc(-1 * var(--sp-3));
+  }
+  .duel2__card {
+    padding: var(--sp-2) 10px 10px;
+  }
+  .duel2__num {
+    font-size: var(--fs-2xl);
+  }
+  .duel2__last {
+    font-size: var(--fs-lg);
+  }
+  .pace2__big b,
+  .zinfo__pos b,
+  .posinfo__now b {
+    font-size: var(--fs-2xl);
+  }
+  .lapbars__row {
+    grid-template-columns: 54px minmax(0, 1fr) 68px 46px;
+    gap: 6px;
+  }
+  .combo2__leg {
+    grid-template-columns: 24px 40px minmax(0, 1fr) auto;
+    gap: var(--sp-2);
+    padding-right: 10px;
+  }
+  .combo2__leg::after {
+    left: calc(24px + var(--sp-2) - 8px);
+  }
+  .combo2__ico {
+    width: 40px;
+    height: 40px;
+  }
+}

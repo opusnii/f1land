@@ -1,0 +1,271 @@
+/* Leaderboard (spec §9.5): podium with trophies on tinted S2 steps, ranked rows, pinned "you" row. */
+
+.lb-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-1) var(--sp-3);
+  margin: var(--sp-3) var(--sp-1) 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+}
+.lb-meta > span:first-child {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Podium: 2–1–3, heights from the markup; helmets and names above, trophy sits on the step edge. */
+.lb-podium-card {
+  margin-top: var(--sp-3);
+  padding: var(--sp-5) var(--sp-3) 0;
+  background:
+    radial-gradient(55% 60% at 50% 100%, rgba(255, 209, 46, 0.09), transparent 70%),
+    var(--s1);
+}
+.lb-podium {
+  display: grid;
+  grid-template-columns: 1fr 1.12fr 1fr;
+  align-items: end;
+  gap: var(--sp-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lb-podium__col {
+  --tint: #c9d3db;
+  --lift: 20px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  animation: lb-rise var(--dur-4) var(--ease-out) var(--d, 0s) both;
+}
+.lb-podium__col[data-place='1'] {
+  --tint: var(--yellow);
+  --lift: 26px;
+}
+.lb-podium__col[data-place='3'] {
+  --tint: #d08a4e;
+  --lift: 18px;
+}
+.lb-podium-card[data-reduced] .lb-podium__col {
+  animation: none;
+}
+@keyframes lb-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+.lb-podium__who {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-1);
+  min-width: 0;
+  padding-bottom: calc(var(--lift) + var(--sp-2));
+  text-align: center;
+}
+.lb-podium__who > .helmet,
+.lb-podium__who > .lb-photo {
+  margin-bottom: 2px;
+}
+.lb-podium__name {
+  max-width: 100%;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.lb-podium__col[data-place='1'] .lb-podium__name {
+  font-size: var(--fs-md);
+  font-weight: 700;
+}
+.lb-podium__col[data-you] .lb-podium__name {
+  color: var(--lime);
+}
+.lb-podium__pts {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lb-podium__pts i {
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  font-style: normal;
+  font-weight: 500;
+}
+.lb-podium__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  border-radius: var(--r-tile) var(--r-tile) 0 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--tint) 24%, transparent),
+    color-mix(in srgb, var(--tint) 3%, transparent)
+  );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--tint) 55%, transparent);
+}
+.lb-podium__trophy {
+  margin-top: calc(-1 * var(--lift));
+}
+.lb-podium__n {
+  color: color-mix(in srgb, var(--tint) 80%, #fff);
+  font-size: var(--fs-2xl);
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Ranked list */
+.lb-list {
+  margin-top: var(--sp-3);
+  padding: var(--sp-1) 0;
+}
+.lb-list > * + * > .lb-row {
+  border-top: 1px solid var(--stroke);
+}
+.lb-row {
+  display: grid;
+  grid-template-columns: 28px 32px minmax(0, 1fr) auto;
+  grid-template-areas:
+    'rank av name pts'
+    'trend av name pts';
+  align-items: center;
+  column-gap: 10px;
+  min-height: 60px;
+  padding: var(--sp-2) var(--sp-4) var(--sp-2) var(--sp-2);
+}
+.lb-row__rank {
+  grid-area: rank;
+  align-self: end;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.2;
+  text-align: center;
+}
+.lb-row > .lb-trend {
+  grid-area: trend;
+  align-self: start;
+  text-align: center;
+}
+.lb-row > .helmet,
+.lb-row > .lb-photo {
+  grid-area: av;
+}
+.lb-photo {
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.lb-row__name {
+  grid-area: name;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lb-row__who {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.lb-row__who b {
+  min-width: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+.lb-row__sub {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.3;
+}
+.lb-row__pts {
+  grid-area: pts;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.lb-row__pts i {
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: var(--fs-xs);
+  font-style: normal;
+  font-weight: 500;
+}
+.lb-row[data-you] {
+  background: rgba(198, 255, 61, 0.06);
+}
+.lb-row[data-you] .lb-row__who b {
+  color: var(--lime);
+}
+.lb-trend {
+  color: var(--muted);
+  font-family: var(--font-num);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.lb-trend--up {
+  color: var(--green);
+}
+.lb-trend--down {
+  color: var(--red);
+}
+
+/* Your row stays above the nav while the list scrolls (sticky offsets start at .screen's bottom padding, which already clears the nav). */
+.lb-pin {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  margin-top: var(--sp-3);
+  border: 1px solid rgba(198, 255, 61, 0.3);
+  border-radius: var(--r-card);
+  background: linear-gradient(180deg, #172026, #10171b);
+  box-shadow:
+    var(--rim),
+    0 14px 32px -10px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+}
+.lb-pin .lb-row[data-you] {
+  background: none;
+}
+.lb-pin__note {
+  padding: 10px var(--sp-4);
+  border-top: 1px solid var(--stroke);
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+}
+.lb-pin__note--cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  background: rgba(198, 255, 61, 0.08);
+  color: var(--lime);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  text-align: center;
+  text-wrap: balance;
+}
+.lb-pin__note--cta:active {
+  background: rgba(198, 255, 61, 0.14);
+}
+.lb-pin__note--cta .icon {
+  flex: none;
+}

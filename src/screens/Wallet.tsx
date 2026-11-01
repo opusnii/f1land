@@ -1,16 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useWallet, type Tx } from '@/store/wallet';
 import { useNav } from '@/store/nav';
 import { useToasts } from '@/store/toasts';
 import { playerStats } from '@/demo/progress';
 import { SubHeader } from '@/app/Header';
-import { Card, useNow } from '@/ui/kit';
-import { IconBolt, IconCheck, IconChevron, IconGift, IconInfo, IconTarget, IconTrophy, IconWallet } from '@/ui/icons';
+import { useNow } from '@/ui/kit';
+import { Obj } from '@/ui/Obj';
+import { EmptyState } from '@/ui/primitives';
+import { CountUp } from '@/ui/bet/motionBits';
+import { CoinLayer, flyCoins, useCoinFx, useHeldBalance } from '@/ui/celebrate/coins';
+import { IconBolt, IconCheck, IconChevron, IconGift, IconInfo, IconTarget, IconTimer, IconTrophy } from '@/ui/icons';
 import { fmtClock, fmtCountdown, fmtNumber, getLang, t } from '@/i18n/core';
 import { haptic } from '@/telegram/sdk';
 import { sfx } from '@/audio/sfx';
-import { Empty, PageHead, Reveal, groupByDay, signed, useBack, useReduced } from './common';
+import { PageHead, Reveal, groupByDay, signed, useBack, useReduced } from './common';
+import '@/styles/screens/wallet.css';
 
 const DAILY_MS = 20 * 3600_000;
 const DAILY_AMOUNT = 200;
@@ -64,15 +68,18 @@ function TxIcon({ kind }: { kind: Tx['kind'] }) {
 
 export function WalletScreen() {
   const back = useBack();
-  const balance = useWallet((s) => s.balance);
   const txs = useWallet((s) => s.txs);
   const entries = useWallet((s) => s.entries);
   const lastDaily = useWallet((s) => s.lastDaily);
   const push = useNav((s) => s.push);
   const toast = useToasts((s) => s.push);
+  const reduced = useReduced();
+  const shown = useHeldBalance();
+  const bump = useCoinFx((s) => s.bump);
   const now = useNow(1000);
   const [limit, setLimit] = useState(40);
-  const [burst, setBurst] = useState(0);
+  const [announce, setAnnounce] = useState('');
+  const balRef = useRef<HTMLDivElement>(null);
   const stats = useMemo(() => playerStats(entries), [entries]);
   const next = lastDaily + DAILY_MS;
   const ready = now >= next;
@@ -80,24 +87,31 @@ export function WalletScreen() {
   const groups = useMemo(() => groupByDay(txs.slice(0, limit), (x) => x.at), [txs, limit, lang]);
   const byId = useMemo(() => new Map(entries.map((e) => [e.id, e])), [entries]);
 
-  const claim = () => {
-    if (!useWallet.getState().claimDaily()) {
+  /** Coins fly from the pressed control to the balance; without motion a toast confirms instead. */
+  const credited = (from: Element | null, n: number, title: string) => {
+    const flying = flyCoins(from, { to: balRef.current, reduced });
+    setAnnounce(t('streak.added', { n: fmtNumber(n) }));
+    if (!flying) toast({ kind: 'win', title });
+  };
+
+  const claim = (e: MouseEvent<HTMLButtonElement>) => {
+    const from = e.currentTarget;
+    if (Date.now() - useWallet.getState().lastDaily < DAILY_MS) {
       haptic.notify('error');
       sfx.lose();
       return;
     }
-    haptic.win();
-    sfx.win();
-    setBurst((b) => b + 1);
-    toast({ kind: 'win', title: t('scr.wallet.bonusToast', { n: DAILY_AMOUNT }) });
+    credited(from, DAILY_AMOUNT, t('scr.wallet.bonusToast', { n: DAILY_AMOUNT }));
+    useWallet.getState().claimDaily();
+    haptic.notify('success');
+    sfx.checkIn();
   };
 
-  const topup = (n: number) => {
+  const topup = (e: MouseEvent<HTMLButtonElement>, n: number) => {
+    credited(e.currentTarget, n, t('scr.wallet.topupToast', { n: fmtNumber(n) }));
     useWallet.getState().credit('topup', n);
     haptic.notify('success');
     sfx.confirm();
-    setBurst((b) => b + 1);
-    toast({ kind: 'info', title: t('scr.wallet.topupToast', { n: fmtNumber(n) }) });
   };
 
   return (
@@ -105,29 +119,22 @@ export function WalletScreen() {
       <SubHeader onBack={back} />
       <PageHead title={t('wallet.title')} sub={t('wallet.sub')} />
       <Reveal i={0}>
-        <Card glow pad={false} className="sc-whero">
-          <div className="sc-whero__coins" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-          </div>
-          <div className="sc-whero__k">
-            <IconWallet size={16} />
-            {t('ui.balance')}
+        <section className="card wl-hero" aria-label={t('pv2.wallet.balance')}>
+          <Obj name="coin-stack" size={112} className="wl-hero__art" priority />
+          <div className="wl-hero__k">
+            {t('pv2.wallet.balance')}
             <span className="sc-pill sc-pill--demo">DEMO</span>
           </div>
-          <div className="sc-whero__v">
-            <AnimatedNumber value={balance} className="num" />
-            <span className="sc-whero__u">PULSE</span>
-            <AnimatePresence>
-              {burst > 0 && (
-                <motion.span key={burst} className="sc-whero__plus" initial={{ opacity: 0, y: 8, scale: 0.8 }} animate={{ opacity: [0, 1, 1, 0], y: -26, scale: 1 }} transition={{ duration: 1.3 }}>
-                  ✦
-                </motion.span>
-              )}
-            </AnimatePresence>
+          <div ref={balRef} className="wl-hero__v" data-bump={bump || undefined}>
+            <CountUp value={shown} duration={700} className="num" />
+            <span className="wl-hero__u">PULSE</span>
+            {bump > 0 && <i key={bump} className="wl-hero__fx" aria-hidden="true" />}
           </div>
-          <div className="sc-whero__stats">
+          <p className="wl-hero__note">
+            <IconInfo size={14} />
+            <span>{t('wallet.note')}</span>
+          </p>
+          <div className="wl-hero__stats">
             <div>
               <span className="num">{fmtNumber(stats.staked)}</span>
               <i>{t('scr.wallet.staked')}</i>
@@ -141,30 +148,28 @@ export function WalletScreen() {
               <i>{t('profile.profit')}</i>
             </div>
           </div>
-        </Card>
+        </section>
       </Reveal>
 
       <Reveal i={1} className="section">
-        <Card className={`sc-daily ${ready ? 'sc-daily--ready' : ''}`} pad>
-          <span className="sc-daily__ic">
-            <IconGift size={24} />
-          </span>
-          <div className="sc-daily__txt">
+        <div className={`card wl-daily${ready ? ' wl-daily--ready' : ''}`}>
+          <Obj name="gift" size={52} className="wl-daily__art" />
+          <div className="wl-daily__txt">
             <b>{t('wallet.daily')}</b>
-            <span className="muted">{ready ? t('scr.wallet.dailyReady', { n: DAILY_AMOUNT }) : t('scr.wallet.dailyNext')}</span>
+            <span>{ready ? t('scr.wallet.dailyReady', { n: DAILY_AMOUNT }) : t('scr.wallet.dailyNext')}</span>
           </div>
           {ready ? (
-            <button className="btn btn--primary btn--sm sc-daily__btn" onClick={claim}>
-              +{DAILY_AMOUNT}
-              <span>{t('wallet.claim')}</span>
+            <button className="btn btn--primary btn--sm wl-daily__btn" onClick={claim}>
+              {t('wallet.claim')}
+              <b className="num">+{DAILY_AMOUNT}</b>
             </button>
           ) : (
-            <span className="sc-daily__cd num" role="timer">
-              <IconCheck size={14} />
+            <span className="wl-daily__cd num" role="timer">
+              <IconTimer size={14} />
               {fmtCountdown(next - now)}
             </span>
           )}
-        </Card>
+        </div>
       </Reveal>
 
       <Reveal i={2} className="section">
@@ -172,10 +177,10 @@ export function WalletScreen() {
           <h2 className="section__title">{t('wallet.topup')}</h2>
           <span className="sc-note">{t('scr.wallet.topupNote')}</span>
         </div>
-        <div className="sc-topups">
+        <div className="wl-chips">
           {TOPUPS.map((n) => (
-            <button key={n} className="sc-topup" onClick={() => topup(n)} aria-label={`${t('wallet.topup')} +${n}`}>
-              <IconBolt size={14} />
+            <button key={n} className="tile wl-chip" onClick={(e) => topup(e, n)} aria-label={t('pv2.wallet.chip', { n: fmtNumber(n) })}>
+              <Obj name={n >= 2500 ? 'coin-stack' : 'coin'} size={36} className="wl-chip__coin" />
               <b className="num">+{fmtNumber(n)}</b>
             </button>
           ))}
@@ -188,33 +193,33 @@ export function WalletScreen() {
           <span className="sc-note num">{txs.length}</span>
         </div>
         {txs.length === 0 ? (
-          <Card>
-            <Empty icon={<IconWallet size={24} />} title={t('scr.wallet.noTx')} />
-          </Card>
+          <div className="card">
+            <EmptyState art="empty-history" title={t('scr.wallet.noTx')} compact />
+          </div>
         ) : (
-          <div className="sc-txgroups">
+          <div className="wl-txgroups">
             {groups.map((g) => (
-              <div key={g.key} className="sc-txgroup">
+              <div key={g.key} className="wl-txgroup">
                 <div className="sc-daylabel">{g.label}</div>
-                <Card pad={false} className="sc-txlist">
+                <div className="card wl-txlist">
                   {g.items.map((tx) => {
                     const e = tx.entryId ? byId.get(tx.entryId) : undefined;
                     const Row = e ? 'button' : 'div';
                     return (
-                      <Row key={tx.id} className="sc-tx" data-kind={tx.kind} {...(e ? { onClick: () => push({ name: 'entry', entryId: e.id }) } : {})}>
-                        <span className="sc-tx__ic">
+                      <Row key={tx.id} className="wl-tx" data-kind={tx.kind} {...(e ? { onClick: () => push({ name: 'entry', entryId: e.id }) } : {})}>
+                        <span className="wl-tx__ic">
                           <TxIcon kind={tx.kind} />
                         </span>
-                        <span className="sc-tx__txt">
+                        <span className="wl-tx__txt">
                           <b>{t(`wallet.tx.${tx.kind}`)}</b>
-                          <span className="muted ellipsis">{e ? `${e.outcomeLabel} · ${e.meetingName[lang]}` : tx.id === 'tx_welcome' ? t('scr.wallet.welcome') : fmtClock(tx.at)}</span>
+                          <span>{e ? `${e.outcomeLabel} · ${e.meetingName[lang]}` : tx.id === 'tx_welcome' ? t('scr.wallet.welcome') : fmtClock(tx.at)}</span>
                         </span>
-                        <span className={`sc-tx__amt num ${tx.amount > 0 ? 'lime' : tx.amount < 0 ? 'sc-neg' : ''}`}>{signed(tx.amount, (n) => fmtNumber(n))}</span>
+                        <span className={`wl-tx__amt num ${tx.amount > 0 ? 'lime' : tx.amount < 0 ? 'sc-neg' : ''}`}>{signed(tx.amount, (n) => fmtNumber(n))}</span>
                         {e && <IconChevron size={14} className="icon muted" />}
                       </Row>
                     );
                   })}
-                </Card>
+                </div>
               </div>
             ))}
             {txs.length > limit && (
@@ -225,10 +230,10 @@ export function WalletScreen() {
           </div>
         )}
       </Reveal>
-      <p className="sc-fine sc-fine--note">
-        <IconInfo size={14} />
-        <span>{t('wallet.note')}</span>
-      </p>
+      <span className="sr-only" role="status">
+        {announce}
+      </span>
+      <CoinLayer />
     </>
   );
 }

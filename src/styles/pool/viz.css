@@ -1,0 +1,207 @@
+/* Reusable pool infographics (spec §8): GapMeter, StintBar, EventTimeline, sector glyph. Imported by src/ui/bet/viz.tsx. */
+
+/* ---------- GapMeter ---------- */
+.gapm {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+}
+.gapm__bar {
+  position: relative;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--ga), rgba(255, 255, 255, 0.1) 30%, rgba(255, 255, 255, 0.1) 70%, var(--gb));
+}
+.gapm__end {
+  position: absolute;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px #0c1215;
+  transform: translate(-50%, -50%);
+}
+.gapm__end--a {
+  left: 0;
+  background: var(--ga);
+}
+.gapm__end--b {
+  left: 100%;
+  background: var(--gb);
+}
+.gapm__val {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-top: -2px;
+}
+.gapm__val b {
+  font-size: var(--fs-2xl);
+  font-weight: 600;
+  line-height: 1;
+}
+.gapm__trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.gapm__trend--closing {
+  color: var(--cyan);
+}
+
+/* ---------- StintBar ---------- */
+.stintbar {
+  padding: var(--sp-2) 0 0;
+}
+.stintbar__track {
+  position: relative;
+  height: 10px;
+  margin: 0 18px 0 14px;
+  border-radius: 5px;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.07) 0 6px, transparent 6px 10px);
+}
+.stintbar__seg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 5px;
+  background: var(--c);
+}
+/* Current stint: lighter, still running */
+.stintbar__seg--now {
+  background: linear-gradient(90deg, var(--c), color-mix(in srgb, var(--c) 45%, transparent));
+}
+.stintbar__tyre {
+  position: absolute;
+  top: 50%;
+  z-index: 1;
+  line-height: 0;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+}
+.stintbar__now {
+  position: absolute;
+  top: -7px;
+  bottom: -7px;
+  z-index: 2;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--text);
+  transform: translateX(-1px);
+}
+.stintbar__flag {
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  line-height: 0;
+  transform: translate(-30%, -50%);
+}
+.stintbar__axis {
+  position: relative;
+  height: 14px;
+  margin: 14px 18px 0 14px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 14px;
+}
+.stintbar__axis span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+.stintbar__axis span:first-child {
+  transform: none;
+}
+.stintbar__axis .stintbar__axis-end {
+  right: 0;
+  left: auto;
+  transform: translateX(30%);
+}
+
+/* ---------- EventTimeline ---------- */
+.evtl {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.evtl__row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px 36px minmax(0, 1fr);
+  align-items: center;
+  column-gap: var(--sp-3);
+  min-height: 48px;
+}
+/* Rail through the node column */
+.evtl__row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(58px + var(--sp-3) + 17px);
+  width: 2px;
+  background: var(--stroke-2);
+}
+.evtl__row:first-child::before {
+  top: 50%;
+}
+.evtl__row:last-child::before {
+  bottom: 50%;
+}
+.evtl__row:only-child::before {
+  display: none;
+}
+.evtl__lap {
+  color: var(--muted);
+  font-size: var(--fs-xs);
+  text-align: right;
+  white-space: nowrap;
+}
+.evtl__node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: #0c1115;
+  box-shadow: inset 0 0 0 1.5px var(--tone, var(--stroke-2));
+  color: var(--tone, var(--text-2));
+}
+.evtl__row:first-child .evtl__node {
+  background: color-mix(in srgb, var(--tone, transparent) 14%, #0c1115);
+}
+.evtl__text {
+  padding: var(--sp-1) 0;
+  font-size: var(--fs-md);
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.evtl__row:not(:first-child) .evtl__text {
+  color: var(--text-2);
+}
+.evtl__empty {
+  margin: 0;
+  padding: var(--sp-3);
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+/* ---------- Sector glyph ---------- */
+.secglyph {
+  display: block;
+  flex: none;
+  overflow: visible;
+}

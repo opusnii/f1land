@@ -1,0 +1,138 @@
+/* Rewards (spec §9.5): weekend missions with objects, progress and claim; coins fly to the header balance. */
+
+.rw-head {
+  position: relative;
+}
+.rw-head .rw-head__tag {
+  margin: var(--sp-2) 0 var(--sp-1) var(--sp-1);
+}
+.rw-head + * {
+  margin-top: var(--sp-4);
+}
+.rw-count {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.rw-claimall {
+  gap: var(--sp-2);
+  height: 48px;
+  margin-bottom: var(--sp-3);
+  border: 1px solid rgba(198, 255, 61, 0.35);
+  background: rgba(198, 255, 61, 0.1);
+  color: var(--lime);
+  font-weight: 700;
+}
+.rw-claimall:active {
+  background: rgba(198, 255, 61, 0.16);
+}
+.rw-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+/* Mission card: object · title, hint and progress · reward or claim */
+.rw-ms {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--sp-3);
+  min-height: 76px;
+  padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-3);
+}
+.rw-ms[data-done]:not([data-claimed]) {
+  border-color: rgba(198, 255, 61, 0.3);
+  background:
+    radial-gradient(70% 120% at 0% 50%, rgba(198, 255, 61, 0.12), transparent 65%),
+    var(--s1);
+}
+.rw-ms[data-claimed] .rw-ms__art {
+  filter: grayscale(0.7) brightness(0.75);
+}
+.rw-ms[data-claimed] .rw-ms__t {
+  color: var(--text-2);
+}
+.rw-ms__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.rw-ms__t {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.rw-ms__d {
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.35;
+  text-wrap: pretty;
+}
+.rw-ms__prog {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: 6px;
+}
+.rw-ms__prog .num {
+  flex: none;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.rw-ms__cta {
+  display: flex;
+  justify-content: flex-end;
+}
+.rw-ms__rw {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--text-2);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rw-claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  min-width: 92px;
+  min-height: 44px;
+  padding: 0 var(--sp-3) 0 var(--sp-2);
+  border-radius: var(--r-tile);
+  background: linear-gradient(180deg, var(--lime-hi), var(--lime-lo));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  color: #0b1200;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-1) var(--ease-out),
+    filter var(--dur-1) var(--ease-out);
+}
+.rw-claim:active {
+  transform: translateY(1px);
+  filter: brightness(0.95);
+}
+.rw-claim:focus-visible {
+  outline: 2px solid var(--lime);
+  outline-offset: 2px;
+}
+.rw-ms__got {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  color: var(--lime);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.rw-start {
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+}

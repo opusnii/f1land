@@ -1,0 +1,1342 @@
+/* ---------------- Races · shared ---------------- */
+/* Groups sit 28 px apart; rows inside a group 8–12. */
+.rc-sec {
+  margin: 28px 0 0;
+}
+.rc-sec--tight {
+  margin-top: 16px;
+}
+.rc-sec .section__head {
+  margin-bottom: 12px;
+}
+
+/* Content-sized action pair; wraps instead of truncating on narrow phones. */
+.rc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.rc-actions > .btn {
+  flex: 1 1 auto;
+  min-width: max-content;
+  gap: 6px;
+  padding: 0 16px;
+}
+
+/* Circuit plate (RacePlate): night art + left scrim, neon track upper right, HTML text over a bottom shade. */
+.rp-track {
+  position: absolute;
+  top: 4px;
+  right: 0;
+  width: 62%;
+  height: 66%;
+  pointer-events: none;
+}
+.rp-track .trackmap {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.rp__shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(7, 9, 11, 0.9) 0%, rgba(7, 9, 11, 0.6) 36%, rgba(7, 9, 11, 0) 62%);
+  pointer-events: none;
+}
+.rp-text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+  height: 100%;
+  padding: 16px;
+  pointer-events: none;
+}
+.rp-text__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+.rp-text__round {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rp-text__foot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.rp-text__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.rp .rp-text__title {
+  font-size: clamp(22px, 7vw, 28px);
+  overflow-wrap: break-word;
+  text-shadow: 0 2px 14px rgba(7, 9, 11, 0.7);
+}
+.rp-text__meta {
+  color: var(--text-2);
+  font-size: 13px;
+}
+.rp-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+.rp-hit:active {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* ---------------- Races ---------------- */
+/* This weekend: plate on top, then next session, timeline and actions on S1. */
+.rc-wk {
+  margin-top: 16px;
+  overflow: hidden;
+  border: 1px solid var(--s1-stroke);
+  border-radius: var(--r-hero);
+  background: var(--s1);
+  box-shadow: var(--rim);
+}
+.rc-wk .hero-plate {
+  border-radius: 0;
+  box-shadow: none;
+}
+.rc-wk__panel {
+  padding: 16px;
+}
+.rc-wk__next {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+  font-size: 17px;
+}
+.rc-wk__in {
+  color: var(--lime);
+  font-size: 15px;
+  font-weight: 600;
+}
+.rc-wk__live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--red);
+}
+.rc-wk__live .dot-live::before {
+  background: var(--red);
+}
+.rc-wk__actions {
+  margin-top: 16px;
+}
+
+/* Session timeline: a short stretch of track with one stop per session. */
+.rc-tl {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.rc-tl__s {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  text-align: center;
+}
+.rc-tl__s::before {
+  content: '';
+  position: absolute;
+  top: 27px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.1);
+}
+.rc-tl__s:first-child::before {
+  left: 50%;
+}
+.rc-tl__s:last-child::before {
+  right: 50%;
+}
+.rc-tl__s[data-st='done']::before {
+  background: rgba(255, 255, 255, 0.28);
+}
+.rc-tl__k {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rc-tl__dot {
+  position: relative;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  margin: 3px 0;
+  border-radius: 50%;
+  background: #0e1418;
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+}
+.rc-tl__d {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 14px;
+}
+.rc-tl__t {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 16px;
+}
+.rc-tl__s[data-st='done'] .rc-tl__dot {
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+}
+.rc-tl__s[data-st='done'] .rc-tl__k,
+.rc-tl__s[data-st='done'] .rc-tl__t {
+  color: var(--muted);
+}
+.rc-tl__s[data-next] .rc-tl__dot {
+  width: 14px;
+  height: 14px;
+  margin: 1px 0;
+  box-shadow: inset 0 0 0 3px var(--lime);
+}
+.rc-tl__s[data-next] .rc-tl__k {
+  color: var(--lime);
+}
+.rc-tl__s[data-st='live'] .rc-tl__dot {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(255, 59, 71, 0.22);
+}
+.rc-tl__s[data-st='live'] .rc-tl__k {
+  color: var(--red);
+}
+
+/* Calendar rows: date chip, flag + country, venue/time or podium, circuit outline. */
+.rc-list {
+  display: flex;
+  flex-direction: column;
+}
+.rc-list > * + * {
+  border-top: 1px solid var(--s1-stroke);
+}
+.rc-row,
+.rc-ch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 68px;
+  padding: 12px 16px 12px 12px;
+  color: var(--text);
+  text-align: left;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+.rc-row:active,
+.rc-ch:active,
+.rc-res:active {
+  background: rgba(255, 255, 255, 0.03);
+}
+.rc-date {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 48px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+}
+.rc-date b {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.rc-date small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+.rc-row__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.rc-row__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.rc-row__meta {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.rc-row__when {
+  color: var(--text-2);
+  white-space: nowrap;
+}
+.rc-row__track {
+  opacity: 0.8;
+}
+.rc-pod {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rc-pod__d {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.rc-pod__d[data-pos='1'] {
+  color: var(--text);
+  font-weight: 700;
+}
+.rc-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 48px;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (max-width: 379px) {
+  .rc-row__k {
+    display: none;
+  }
+}
+@media (max-width: 345px) {
+  /* The outline is decoration; long country names and the podium need the room. */
+  .rc-row .rc-row__track {
+    display: none;
+  }
+}
+
+/* ---------------- Meeting ---------------- */
+.rc-mhero {
+  margin-top: 8px;
+}
+.rc-sess-list {
+  display: flex;
+  flex-direction: column;
+}
+.rc-sess {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 16px 12px 12px;
+}
+.rc-sess + .rc-sess {
+  border-top: 1px solid var(--s1-stroke);
+}
+.rc-sess[data-st='live'] {
+  background: linear-gradient(90deg, rgba(255, 59, 71, 0.12), transparent 70%);
+}
+.rc-sess__day {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  line-height: 1;
+}
+.rc-sess__day span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.rc-sess__day b {
+  font-size: 20px;
+  font-weight: 600;
+}
+.rc-sess__main {
+  flex: 1;
+  min-width: 0;
+}
+.rc-sess__name {
+  font-size: 15px;
+  font-weight: 600;
+}
+.rc-sess[data-major] .rc-sess__name {
+  font-weight: 700;
+}
+.rc-sess__time {
+  margin-top: 2px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.rc-sess[data-st='done'] .rc-sess__name,
+.rc-sess[data-st='done'] .rc-sess__day b,
+.rc-sess[data-st='done'] .rc-sess__time {
+  color: var(--muted);
+}
+.rc-sess__resched {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+}
+.rc-sess__right {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.rc-sess__done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.rc-sess__in {
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rc-sess__watch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: var(--r-chip);
+  background: var(--s2);
+  box-shadow:
+    var(--rim),
+    inset 0 0 0 1px rgba(198, 255, 61, 0.35);
+  color: var(--lime);
+  font-size: 12px;
+  font-weight: 700;
+}
+/* 44 px tap target around the compact chip. */
+.rc-sess__watch::after {
+  content: '';
+  position: absolute;
+  inset: -8px -4px;
+}
+
+.rc-ccard {
+  padding: 16px;
+}
+.rc-ccard__top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.rc-ccard__txt {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.rc-ccard__name {
+  font-size: 15px;
+  font-weight: 700;
+}
+.rc-ccard__loc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Key/value S2 tiles; 3 across, 2 across where three would crowd the values. */
+.rc-kvgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 8px;
+  margin-top: 16px;
+}
+.rc-kvgrid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.rc-wk__panel > .rc-kvgrid:first-child {
+  margin-top: 0;
+}
+.rc-kv {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+}
+.rc-kv__v {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.rc-kv__v--txt {
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: normal;
+}
+.rc-kv__k {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+.rc-pools {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.rc-pool {
+  padding: 16px;
+}
+.rc-pool__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.rc-pool__fam {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rc-pool__lock {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.rc-pool__q {
+  margin-top: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+  text-wrap: pretty;
+}
+.rc-pool__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.rc-pool__x {
+  color: var(--lime);
+  font-weight: 700;
+}
+
+/* Results: position, team stripe, helmet, code + surname, gap, points. */
+.rc-results {
+  display: flex;
+  flex-direction: column;
+}
+.rc-res {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 8px 16px 8px 12px;
+  text-align: left;
+}
+.rc-res + .rc-res {
+  border-top: 1px solid var(--s1-stroke);
+}
+.rc-res__pos {
+  flex: none;
+  width: 28px;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+.rc-res[data-pos='1'] .rc-res__pos {
+  color: var(--yellow);
+}
+.rc-res[data-pos='2'] .rc-res__pos {
+  color: #d7dee3;
+}
+.rc-res[data-pos='3'] .rc-res__pos {
+  color: #e09a5b;
+}
+.rc-res .team-bar {
+  height: 24px;
+}
+.rc-res__name {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  line-height: 1.15;
+}
+.rc-res__code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.rc-res__name .muted {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.rc-res__fl {
+  display: inline-flex;
+  align-items: center;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: rgba(178, 107, 255, 0.16);
+  color: var(--purple);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.rc-res__gap {
+  flex: none;
+  color: var(--text-2);
+  font-size: 13px;
+  text-align: right;
+  white-space: nowrap;
+}
+.rc-res__pts {
+  flex: none;
+  width: 30px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+}
+.rc-res__more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 48px;
+  border-top: 1px solid var(--s1-stroke);
+  color: var(--lime);
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (max-width: 379px) {
+  /* The helmet disc carries the team colour; the stripe makes way for the surname. */
+  .rc-res .team-bar {
+    display: none;
+  }
+}
+
+/* ---------------- Session ---------------- */
+.rc-leader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+  font-size: 14px;
+}
+.rc-leader .team-bar {
+  height: 20px;
+}
+.rc-leader__lap {
+  margin-left: auto;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.rc-about {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-wrap: pretty;
+}
+.rc-wk__panel .btn--lg {
+  margin-top: 16px;
+}
+.rc-ch {
+  min-height: 60px;
+}
+.rc-ch__txt {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.rc-ch__txt .muted {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ---------------- Circuit ---------------- */
+.ci-hero {
+  margin-top: 8px;
+  overflow: hidden;
+  border: 1px solid var(--s1-stroke);
+  border-radius: var(--r-hero);
+  background: var(--s1);
+  box-shadow: var(--rim);
+}
+.ci-hero .hero-plate {
+  border-radius: 0;
+  box-shadow: none;
+}
+/* Title on top, map fills the rest; only the map takes taps (sector select). */
+.ci-plate > .hero-plate__body {
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+.ci-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 16px 24px;
+  background: linear-gradient(180deg, rgba(7, 9, 11, 0.8) 0%, rgba(7, 9, 11, 0.5) 60%, rgba(7, 9, 11, 0) 100%);
+}
+.ci-head__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+.ci-head__kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+}
+.ci-hero .ci-head__name {
+  font-size: 22px;
+  line-height: 1;
+  overflow-wrap: anywhere;
+}
+.ci-head__len {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+}
+.ci-head__len b {
+  font-size: 28px;
+  font-weight: 600;
+}
+.ci-head__len span {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+.ci-map {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: -16px;
+  padding-bottom: 6px;
+  pointer-events: auto;
+}
+.ci-map .trackmap {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ci-map .trackmap__corner {
+  font-size: 9px;
+  font-weight: 700;
+  fill: rgba(255, 255, 255, 0.85);
+  paint-order: stroke;
+  stroke: rgba(5, 8, 10, 0.9);
+  stroke-width: 2.5px;
+}
+.ci-map__skel {
+  position: absolute;
+  inset: 24px;
+  border-radius: var(--r-card);
+}
+.ci-panel {
+  padding: 12px 16px 16px;
+}
+.ci-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.ci-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ci-lg {
+  display: inline-block;
+  width: 16px;
+  height: 4px;
+  border-radius: 2px;
+}
+.ci-lg--start {
+  width: 12px;
+  height: 8px;
+  border-radius: 1px;
+  background: repeating-conic-gradient(#fff 0 25%, #0a0d10 0 50%) 0 0 / 4px 4px;
+}
+.ci-lg--pit {
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.6) 0 3px, transparent 3px 6px);
+}
+.ci-lg-btn {
+  position: relative;
+  min-height: 32px;
+  margin-left: auto;
+  padding: 0 12px;
+  border-radius: var(--r-chip);
+  background: var(--s2);
+  box-shadow:
+    var(--rim),
+    inset 0 0 0 1px var(--stroke-2);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    color var(--dur-2) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out);
+}
+.ci-lg-btn::after {
+  content: '';
+  position: absolute;
+  inset: -6px 0;
+}
+.ci-lg-btn[aria-pressed='true'] {
+  color: var(--text);
+  box-shadow:
+    var(--rim),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+/* Sector legend doubles as the sector filter; each tile wears its sector colour. */
+.ci-secs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.ci-sec {
+  --sec: var(--lime);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  padding: 10px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow:
+    var(--rim),
+    inset 0 2px 0 var(--sec);
+  text-align: left;
+  transition:
+    background-color var(--dur-2) var(--ease-out),
+    box-shadow var(--dur-2) var(--ease-out);
+}
+.ci-sec[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--sec) 14%, transparent);
+  box-shadow:
+    var(--rim),
+    inset 0 0 0 1.5px var(--sec);
+}
+.ci-sec__k {
+  color: var(--sec);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.ci-sec__v {
+  font-size: 14px;
+  font-weight: 700;
+}
+.ci-sec__v .num {
+  font-size: 15px;
+}
+.ci-sec__s {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.25;
+}
+
+.ci-facts {
+  margin: 0;
+  padding: 2px 16px;
+}
+.ci-fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+}
+.ci-fact + .ci-fact {
+  border-top: 1px solid var(--s1-stroke);
+}
+.ci-fact dt {
+  color: var(--text-2);
+  font-size: 14px;
+}
+.ci-fact dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: right;
+}
+.ci-fact dd i {
+  margin-left: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 500;
+}
+
+.ci-turns {
+  display: flex;
+  flex-direction: column;
+}
+.ci-turn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  font-size: 13px;
+}
+.ci-turn + .ci-turn {
+  border-top: 1px solid var(--s1-stroke);
+}
+.ci-turn__n {
+  flex: none;
+  width: 32px;
+  color: var(--text-2);
+  font-weight: 700;
+}
+.ci-turn__name {
+  flex: 1;
+  min-width: 0;
+}
+.ci-turn__dir {
+  flex: none;
+  width: 16px;
+  color: var(--muted);
+  text-align: center;
+}
+.ci-turn__sev {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+}
+.ci-turn__sev i {
+  width: 4px;
+  height: 10px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.12);
+}
+.ci-turn__sev i[data-on] {
+  background: rgba(255, 255, 255, 0.7);
+}
+.ci-turn__r {
+  flex: none;
+  width: 52px;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: right;
+}
+
+/* Season stat grid (shared with the profile screen). */
+.sc-statgrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--stroke);
+  border-radius: var(--radius);
+  background: var(--panel-solid);
+}
+.sc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  min-width: 0;
+}
+.sc-stat:not(:nth-child(3n + 1)) {
+  border-left: 1px solid var(--stroke);
+}
+.sc-stat:nth-child(n + 4) {
+  border-top: 1px solid var(--stroke);
+}
+.sc-stat--hl {
+  border-color: rgba(198, 255, 61, 0.3);
+}
+.sc-stat__v {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sc-stat__v.sc-stat__v--sm {
+  font-size: 13px;
+  font-family: var(--font);
+  white-space: normal;
+  line-height: 1.2;
+  min-height: 21px;
+  display: flex;
+  align-items: center;
+}
+.sc-stat__v i {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 3px;
+}
+.sc-stat__k {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* ---------------- Driver ---------------- */
+.sc-favbtn[aria-pressed='true'] {
+  color: var(--yellow);
+  border-color: rgba(255, 209, 46, 0.5);
+}
+.sc-favbtn[aria-pressed='true'] svg {
+  fill: currentColor;
+}
+/* Identity panel: team tint (identity is the one place team colour may fill), helmet, car, outline number. */
+.dr-hero {
+  --team: var(--lime);
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--team) 30%, var(--s1-stroke));
+  border-radius: var(--r-hero);
+  background:
+    radial-gradient(110% 85% at 100% 0%, color-mix(in srgb, var(--team) 32%, transparent) 0%, transparent 62%),
+    linear-gradient(165deg, color-mix(in srgb, var(--team) 12%, #0e1418) 0%, #0b1013 58%, #090d10 100%);
+  box-shadow: var(--rim);
+}
+.dr-hero__num {
+  position: absolute;
+  z-index: -1;
+  top: -18px;
+  right: 12px;
+  color: transparent;
+  font-family: var(--font-display);
+  font-size: 150px;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  -webkit-text-stroke: 1.5px color-mix(in srgb, var(--team) 60%, #fff);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.dr-hero__car {
+  position: absolute;
+  z-index: -1;
+  top: 40px;
+  right: -20px;
+}
+.dr-hero__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  margin-top: 12px;
+}
+.dr-hero__first {
+  color: var(--text-2);
+  font-size: 15px;
+}
+.dr-hero .dr-hero__last {
+  font-size: clamp(28px, 9vw, 36px);
+  overflow-wrap: anywhere;
+}
+.dr-hero__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.dr-hero__team .team-bar {
+  height: 14px;
+}
+.dr-hero__nat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+.dr-hero__fav {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 3px 8px;
+  border-radius: var(--r-chip);
+  background: rgba(7, 9, 11, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(255, 209, 46, 0.4);
+  color: var(--yellow);
+  font-size: 12px;
+  font-weight: 700;
+}
+@media (max-width: 379px) {
+  /* Keep the car clear of the helmet on narrow phones. */
+  .dr-hero__car {
+    right: -72px;
+  }
+  .dr-hero__num {
+    font-size: 128px;
+  }
+}
+
+.dr-live {
+  padding: 16px;
+}
+.dr-live__top {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: 12px;
+}
+.dr-live__pos,
+.dr-live__gap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1;
+}
+.dr-live__k {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+.dr-live__posv {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+}
+.dr-live__pos b {
+  font-size: 36px;
+  font-weight: 600;
+}
+.dr-live__pos i {
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+}
+.dr-live__gap b {
+  font-size: 20px;
+  font-weight: 600;
+}
+.dr-live__tyre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+.dr-live__status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 12px 0 16px;
+  font-size: 13px;
+}
+.dr-live__none {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: var(--text-2);
+  font-size: 14px;
+}
+
+.dr-form {
+  margin-top: 12px;
+  padding: 16px;
+}
+.dr-form__k {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.dr-form__row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+.dr-form__chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 52px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+  color: var(--text-2);
+}
+.dr-form__chip b {
+  font-size: 13px;
+}
+.dr-form__chip[data-tone='win'] {
+  color: var(--yellow);
+  box-shadow:
+    var(--rim),
+    inset 0 0 0 1px rgba(255, 209, 46, 0.45);
+}
+.dr-form__chip[data-tone='pod'] {
+  color: var(--text);
+  box-shadow:
+    var(--rim),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+.dr-form__chip[data-tone='out'] {
+  color: var(--muted);
+}
+.dr-form__chip[data-tone='dnf'] {
+  color: #ff7a83;
+}
+
+.dr-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+.dr-trait {
+  display: grid;
+  grid-template-columns: 112px 1fr 30px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.dr-trait b {
+  text-align: right;
+}
+.dr-trait__k {
+  color: var(--text-2);
+}
+
+.dr-team {
+  padding: 16px;
+}
+.dr-team__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.dr-team__swatch {
+  flex: none;
+  width: 6px;
+  height: 40px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, var(--team), var(--team2));
+}
+.dr-team__head b {
+  font-size: 16px;
+}
+.dr-team__head .muted {
+  font-size: 13px;
+}
+.dr-team .rc-kvgrid {
+  margin-top: 12px;
+}
+.dr-mate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: var(--r-tile);
+  background: var(--s2);
+  box-shadow: var(--rim);
+  text-align: left;
+}
+.dr-mate__txt {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  font-size: 14px;
+}
+.dr-mate__txt .muted {
+  font-size: 12px;
+}
