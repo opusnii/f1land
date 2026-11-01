@@ -71,9 +71,8 @@
   text-align: left;
 }
 .lv-session__flag {
+  display: inline-flex;
   flex: none;
-  font-size: 18px;
-  line-height: 1;
 }
 .lv-session__text {
   display: flex;
@@ -198,10 +197,12 @@
 .tw-chip {
   position: relative;
   flex: 0 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
+  display: grid;
+  grid-template-columns: 24px auto;
+  grid-template-rows: auto auto;
+  align-content: center;
+  column-gap: 6px;
+  row-gap: 3px;
   min-width: 56px;
   padding: 0 8px 0 11px;
   border-radius: 10px;
@@ -217,6 +218,10 @@
   width: 2px;
   border-radius: 1px;
   background: var(--team);
+}
+.tw-chip__helmet {
+  grid-row: 1 / span 2;
+  align-self: center;
 }
 .tw-chip__top {
   display: flex;
@@ -295,6 +300,12 @@
 }
 
 /* ---------- View sheet ---------- */
+.lv-view__hint {
+  margin: -4px 0 0;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+  line-height: 1.4;
+}
 .lv-view {
   display: grid;
   gap: 16px;
@@ -487,6 +498,9 @@
   align-items: flex-start;
   gap: 6px;
 }
+.lv-moments__slot {
+  max-width: 100%;
+}
 .lv-moment {
   display: inline-flex;
   align-items: center;
@@ -513,9 +527,217 @@
   overflow: hidden;
   line-height: 1.25;
 }
-/* Neutralisations and the followed driver's overtakes carry the tone in the text too. */
+/* The rival's overtakes carry the tone in the text too. */
 .lv-moment--big .lv-moment__text {
   color: var(--tone);
+}
+
+/* Followed driver overtake: two codes and an arrow (spec §6). */
+.lv-ot {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: min(300px, 100%);
+  padding: 10px 14px 12px;
+  border-radius: var(--r-card);
+  background: rgba(10, 14, 17, 0.94);
+  box-shadow:
+    var(--rim),
+    inset 3px 0 0 var(--ot-tone);
+  --ot-tone: var(--lime);
+}
+.lv-ot--loss {
+  --ot-tone: var(--orange);
+}
+.lv-ot__kicker {
+  color: var(--ot-tone);
+}
+.lv-ot__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lv-ot__drv {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: var(--fs-lg);
+}
+.lv-ot__drv b {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.lv-ot__drv--you {
+  color: var(--text);
+}
+.lv-ot__drv--you b {
+  color: var(--lime);
+}
+.lv-ot__arrow {
+  flex: none;
+  color: var(--ot-tone);
+}
+.lv-ot__pos {
+  margin-left: auto;
+  color: var(--text);
+  font-size: var(--fs-xl);
+  font-weight: 700;
+}
+.lv-ot__sub {
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+
+/* Finish: results card after the chequered flag pass. */
+.lv-fin {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: min(340px, 100%);
+  padding: 10px 12px;
+  border-radius: var(--r-card);
+  background: rgba(10, 14, 17, 0.95);
+  box-shadow:
+    var(--rim),
+    0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.lv-fin__flag {
+  flex: none;
+}
+.lv-fin__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.lv-fin__txt > b {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.lv-fin__podium {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.lv-fin__podium li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-2);
+  font-size: var(--fs-sm);
+}
+.lv-fin__podium li:first-child {
+  color: var(--yellow);
+}
+.lv-fin__podium b {
+  color: var(--text);
+  font-weight: 700;
+}
+.lv-fin__go {
+  flex: none;
+  min-height: 44px;
+}
+.lv-flagpass {
+  position: absolute;
+  z-index: 9;
+  top: 34%;
+  left: 0;
+  pointer-events: none;
+  animation: lv-flagpass 0.9s cubic-bezier(0.45, 0, 0.55, 1) both;
+}
+.lv-flagpass .obj {
+  filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.6));
+}
+@keyframes lv-flagpass {
+  0% {
+    transform: translateX(-140px) rotate(-8deg);
+  }
+  50% {
+    transform: translateX(calc(50vw - 60px)) rotate(4deg);
+  }
+  100% {
+    transform: translateX(calc(100vw + 20px)) rotate(-6deg);
+  }
+}
+
+/* SC / VSC / RED: full-width banner over the timing strip, a tone stripe sweeps left to right. */
+.lv-banner {
+  position: absolute;
+  z-index: 8;
+  top: var(--lv-strip);
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 8px 14px 10px 10px;
+  border-radius: 14px;
+  overflow: hidden;
+  isolation: isolate;
+  background: rgba(22, 19, 6, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(255, 209, 46, 0.45);
+  color: var(--yellow);
+  --bn-tone: 255, 209, 46;
+}
+.lv-banner--red {
+  background: rgba(32, 8, 10, 0.96);
+  box-shadow: inset 0 0 0 1px rgba(255, 59, 71, 0.5);
+  color: #ff8088;
+  --bn-tone: 255, 59, 71;
+}
+.lv-banner__sweep {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(100deg, transparent 0%, rgba(var(--bn-tone), 0.28) 45%, rgba(var(--bn-tone), 0.08) 60%, transparent 75%);
+  transform: translateX(-100%);
+  animation: lv-sweep 0.9s var(--ease-out) 0.12s both;
+}
+@keyframes lv-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+.lv-banner__bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgb(var(--bn-tone));
+  transform-origin: 0 50%;
+  animation: lv-bar 0.6s var(--ease-out) both;
+}
+@keyframes lv-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+.lv-banner__obj {
+  flex: none;
+}
+.lv-banner__txt {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lv-banner__txt .techlabel {
+  color: inherit;
+}
+.lv-banner__txt b {
+  color: var(--text);
+  font-size: var(--fs-lg);
+  font-weight: 700;
+  line-height: 1.2;
+  text-wrap: balance;
 }
 
 /* Followed driver: one quiet row; tap opens the driver picker. */
@@ -791,186 +1013,220 @@
   }
 }
 
-/* ---------- Pool cards ---------- */
-.pc {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  background: linear-gradient(155deg, rgba(30, 41, 47, 0.92), rgba(13, 18, 21, 0.96) 70%);
-  color: var(--text);
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.15s var(--ease-out), border-color 0.2s;
-}
-.pc:active {
-  transform: scale(0.985);
-}
-.pc--mine {
-  border-color: rgba(198, 255, 61, 0.45);
-  box-shadow: inset 0 0 0 1px rgba(198, 255, 61, 0.12);
-}
-.pc--locked {
-  background: linear-gradient(155deg, rgba(24, 30, 34, 0.92), rgba(12, 15, 17, 0.96) 70%);
-}
-.pc__head {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-.pc__lock {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--muted);
-}
-.pc__titles {
-  flex: 1;
-  min-width: 0;
-}
-.pc__kicker {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-  color: var(--lime);
-  font-size: 11.5px;
-  line-height: 1.3;
-}
-.pc__mine,
-.pc__status {
-  flex: none;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: rgba(198, 255, 61, 0.14);
-  color: var(--lime);
-  font-family: var(--font);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-transform: none;
-}
-.pc__status {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text-2);
-}
-.pc__status--resolving {
-  background: rgba(47, 230, 255, 0.12);
-  color: var(--cyan);
-}
-.pc__status--void {
-  background: rgba(255, 209, 46, 0.12);
-  color: var(--yellow);
-}
-.pc__q {
-  margin-top: 4px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.25;
-}
-.pc__outs {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-}
-.pc__out {
-  /* Label above odds: the label gets the full chip width (no "BOR…" truncation). */
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: 1px;
-  min-width: 0;
-  height: 44px;
-  padding: 0 9px;
-  border: 1px solid var(--stroke);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.045);
-  font-size: 11.5px;
-  line-height: 1.15;
-}
-.pc__out-l {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-2);
-  font-weight: 600;
-}
-.pc__out b {
-  color: var(--lime);
-  font-size: 14px;
-  line-height: 1.1;
-}
-.pc__out--win {
-  border-color: rgba(198, 255, 61, 0.6);
-  background: rgba(198, 255, 61, 0.12);
-}
-.pc__foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  color: var(--muted);
-  font-size: 11px;
-}
-.pc__go {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  color: var(--lime);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.pc-strip {
-  display: flex;
-  gap: 8px;
-  margin: 0 -10px;
-  padding: 2px 10px 4px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 0 10px;
-  scrollbar-width: none;
-}
-.pc-strip::-webkit-scrollbar {
-  display: none;
-}
-.pc-strip .pc {
-  flex: 0 0 min(300px, 84%);
-  scroll-snap-align: start;
-}
+/* ---------- Pools tab: featured plate + rows ---------- */
 .pc-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
+.pf {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--r-card);
+  overflow: hidden;
+  box-shadow:
+    var(--rim),
+    0 0 0 1px var(--s1-stroke);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+.pf:active {
+  transform: scale(0.99);
+}
+.pf__art {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+.pf__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+}
+.pf__head .display-title {
+  flex: 1;
+  min-width: 0;
+}
+.pf__head .display-title__icon {
+  color: var(--text);
+}
+.pf__timer {
+  flex: none;
+  border-radius: 50%;
+  background: rgba(7, 9, 11, 0.7);
+}
+.pf__mine {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: rgba(198, 255, 61, 0.14);
+  color: var(--lime);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+.pf__q {
+  margin: 0;
+  max-width: 34ch;
+  font-size: var(--fs-md);
+  font-weight: 700;
+  line-height: 1.3;
+  text-wrap: balance;
+}
+.pf__outs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.pf__out {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 6px;
+  min-height: 44px;
+  padding: 4px 8px;
+  background: rgba(10, 14, 17, 0.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.pf__vis {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+}
+.pf__vis:empty {
+  display: none;
+}
+.pf__out-l {
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  line-height: 1.15;
+}
+.pf__out b {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  line-height: 1.1;
+}
+.pf__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+}
+.pf__meta {
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+.pf__cta {
+  flex: none;
+  min-height: 40px;
+}
+.pr-list {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--r-card);
+  background: var(--s1);
+  box-shadow:
+    var(--rim),
+    0 0 0 1px var(--s1-stroke);
+  overflow: hidden;
+}
+.pr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 60px;
+  padding: 8px 10px 8px 12px;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.pr + .pr {
+  border-top: 1px solid var(--stroke);
+}
+.pr:active {
+  background: rgba(255, 255, 255, 0.03);
+}
+.pr--mine {
+  box-shadow: inset 2px 0 0 var(--lime);
+}
+.pr__timer,
+.pr__icon {
+  flex: none;
+}
+.pr__icon {
+  width: 36px;
+  color: var(--muted);
+}
+.pr__main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.pr__kicker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-2);
+  font-size: var(--fs-xs);
+}
+.pr__title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pr__q {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pr__odds {
+  flex: none;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.pr__status {
+  flex: none;
+}
+.pr__chev {
+  flex: none;
+  color: var(--muted);
+}
 .lv-group {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin: 0;
   padding: 8px 2px 0;
   color: var(--muted);
   font-size: 11.5px;
+  font-weight: 600;
 }
 .lv-group b {
   font-family: var(--font-num);
   font-size: 12px;
   letter-spacing: 0;
-}
-.lv-group--lime {
-  color: var(--lime);
 }
 .lv-empty {
   display: flex;
@@ -1376,8 +1632,8 @@
   background: rgba(198, 255, 61, 0.06);
 }
 .lv-ch__flag {
+  display: inline-flex;
   flex: none;
-  font-size: 22px;
 }
 .lv-ch__text {
   flex: 1;
@@ -1510,13 +1766,23 @@
 }
 .reduce-motion .lv-live-dot,
 .reduce-motion .lv-empty__pulse,
-.reduce-motion .lv-loading__ring {
+.reduce-motion .lv-loading__ring,
+.reduce-motion .lv-banner__sweep,
+.reduce-motion .lv-banner__bar {
   animation: none;
+}
+.reduce-motion .lv-flagpass {
+  display: none;
 }
 @media (prefers-reduced-motion: reduce) {
   .lv-live-dot,
-  .lv-empty__pulse {
+  .lv-empty__pulse,
+  .lv-banner__sweep,
+  .lv-banner__bar {
     animation: none;
+  }
+  .lv-flagpass {
+    display: none;
   }
   .dsheet {
     transition: none;
