@@ -126,7 +126,7 @@ function HistoryRow({ e, onOpen }: { e: Entry; onOpen: () => void }) {
         <span className="hs-row__mech" aria-hidden="true">
           <MechIcon pool={e.pool} size={16} />
         </span>
-        <span className="hs-row__fam ellipsis">{tx.title || e.meetingName[lang] || meta?.name}</span>
+        <span className="hs-row__fam">{tx.title || e.meetingName[lang] || meta?.name}</span>
         <EntryBadge e={e} />
       </span>
       <span className="hs-row__q">{tx.question}</span>
