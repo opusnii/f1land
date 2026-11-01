@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, type CSSProperties } from 'react';
 import { useNav, type TabId } from '@/store/nav';
 import { useLive } from '@/store/live';
 import { t } from '@/i18n/core';
@@ -30,6 +30,42 @@ const CAR_LEN = 46;
 const SPRING = 'cubic-bezier(0.22, 1, 0.36, 1)';
 
 type Flag = 'live' | 'sc' | null;
+
+/* Pit box: lime floor at 18 % with a recess shadow so the active tab reads at a glance (spec §6, audit P3-13).
+   Inline because the base nav styles live in the shared app.css. */
+const WELL_STYLE: CSSProperties = {
+  background: 'linear-gradient(180deg, rgba(198, 255, 61, 0.18), rgba(198, 255, 61, 0.07) 60%, rgba(0, 0, 0, 0.22))',
+  boxShadow: 'inset 0 3px 7px rgba(0, 0, 0, 0.75), inset 0 0 0 1px rgba(198, 255, 61, 0.16), inset 0 -1px 0 rgba(255, 255, 255, 0.06)',
+};
+
+/** Tyre rects of `NavCar` (viewBox 0 0 100 40): tread strokes roll over them while the car drives. */
+const TYRES = [
+  { x: 14, y: 1.5, w: 16, h: 9 },
+  { x: 14, y: 29.5, w: 16, h: 9 },
+  { x: 68, y: 2.5, w: 13, h: 7.5 },
+  { x: 68, y: 30, w: 13, h: 7.5 },
+];
+/** Tread travel per px driven; kept below the dash period per frame so fast drives don't strobe backwards. */
+const TREAD_PER_PX = 0.18;
+
+function Treads({ innerRef }: { innerRef: React.Ref<SVGSVGElement> }) {
+  return (
+    <svg ref={innerRef} className="nav__treads" viewBox="0 0 100 40" aria-hidden="true" style={{ position: 'absolute', inset: 0, opacity: 0, filter: 'none', transition: 'opacity 120ms' }}>
+      <defs>
+        <clipPath id="navcar-treads">
+          {TYRES.map((t, i) => (
+            <rect key={i} x={t.x + 0.8} y={t.y + 0.8} width={t.w - 1.6} height={t.h - 1.6} rx={2} />
+          ))}
+        </clipPath>
+      </defs>
+      <g clipPath="url(#navcar-treads)" stroke="rgba(230, 236, 240, 0.42)" strokeDasharray="1.3 2.7">
+        {TYRES.map((t, i) => (
+          <line key={i} x1={t.x - 4} x2={t.x + t.w + 4} y1={t.y + t.h / 2} y2={t.y + t.h / 2} strokeWidth={t.h} />
+        ))}
+      </g>
+    </svg>
+  );
+}
 
 /** Race-status dot on the Live tab: red while a session runs, yellow under SC/VSC. */
 function useLiveFlag(): Flag {
@@ -86,6 +122,7 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
   const trailRef = useRef<HTMLDivElement>(null);
   const wellRef = useRef<HTMLDivElement>(null);
   const slotRef = useRef<HTMLDivElement>(null);
+  const treadRef = useRef<SVGSVGElement>(null);
   const items = useRef<Array<HTMLButtonElement | null>>([]);
   // x: car centre in lane px; yaw: degrees, 0 = nose right, -180 = nose left.
   const sim = useRef({ x: null as number | null, yaw: 0, raf: 0 });
@@ -147,6 +184,7 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
       puff(lane, from - Math.sign(Math.cos((yaw0 * Math.PI) / 180)) * rearOffset, midY + 5, -dir * 6, 10, 40);
     }
     car.dataset.moving = '';
+    if (treadRef.current) treadRef.current.style.opacity = '1';
     const t0 = performance.now();
 
     // performance.now() rather than the rAF timestamp: some Android WebViews pass an epoch-based value.
@@ -171,6 +209,9 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
         const e = k < 0.55 ? 1.6529 * k * k : 1 - 2.2222 * (1 - k) * (1 - k);
         speed = k < 0.55 ? k / 0.55 : (1 - k) / 0.45;
         x = (turning ? from + dir * 3 : from) + (to - (turning ? from + dir * 3 : from)) * e;
+        // Wheels roll with the distance driven; the car's frame always points nose-forward (+x).
+        const tg = treadRef.current?.firstElementChild?.nextElementSibling as SVGGElement | null | undefined;
+        if (tg) tg.style.strokeDashoffset = String(-(Math.abs(x - from) * TREAD_PER_PX * 10) % 4);
         if (!braking && k >= 0.55) {
           braking = true;
           car.dataset.brake = '';
@@ -206,6 +247,7 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
       }
       place(to, yaw1);
       trail.style.opacity = '0';
+      if (treadRef.current) treadRef.current.style.opacity = '0';
       if (wellRef.current) wellRef.current.style.transform = '';
       delete car.dataset.moving;
       // Rain light lingers a beat after the stop, like a real car.
@@ -225,6 +267,7 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
       delete car.dataset.moving;
       delete car.dataset.brake;
       trail.style.opacity = '0';
+      if (treadRef.current) treadRef.current.style.opacity = '0';
       if (wellRef.current) wellRef.current.style.transform = '';
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -301,7 +344,7 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
       })}
       <div className="nav__bed" aria-hidden="true">
         <div className="nav__slot" ref={slotRef}>
-          <div className="nav__well" ref={wellRef} />
+          <div className="nav__well" ref={wellRef} style={WELL_STYLE} />
           <div className="nav__rim" />
         </div>
       </div>
@@ -311,6 +354,7 @@ export function NavBar({ hidden }: { hidden?: boolean }) {
             <div className="nav__trail" ref={trailRef} />
             <div className="nav__car-chassis" ref={chassisRef}>
               <NavCar />
+              <Treads innerRef={treadRef} />
             </div>
           </div>
         </div>
