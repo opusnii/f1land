@@ -36,6 +36,8 @@ export function MyPoolsScreen() {
   const txs = useWallet((s) => s.txs);
   const push = useNav((s) => s.push);
   const go = useNav((s) => s.go);
+  const activeSession = useLive((s) => s.runner?.manifest.session_id ?? null);
+  const paused = useFeedPaused();
   const [tab, setTab] = useState<Tab>('open');
   const open = entries.filter((e) => e.state === 'PENDING');
   const settled = entries.filter((e) => e.state !== 'PENDING');
@@ -44,6 +46,12 @@ export function MyPoolsScreen() {
   const decided = settled.filter((e) => e.state === 'WON' || e.state === 'LOST');
   const hitRate = decided.length ? Math.round((decided.filter((e) => e.state === 'WON').length / decided.length) * 100) : null;
   const openEntry = (e: Entry) => push({ name: 'entry', entryId: e.id });
+  const toLive = () => {
+    haptic.impact('light');
+    go('live');
+  };
+  // Pending picks of the running session wait on the feed; say so instead of looking stuck.
+  const waitingOnFeed = paused && open.some((e) => e.sessionId === activeSession);
 
   return (
     <div className="mypools">
@@ -51,16 +59,16 @@ export function MyPoolsScreen() {
       <h1 className="page-title">{t('entries.title')}</h1>
       <p className="page-sub">{t('entries.sub')}</p>
 
-      <div className="mp-stats">
+      <div className="card mp-stats">
         <div className="mp-stat">
           <span className="mp-stat__k">{t('mp.inPlay')}</span>
           <span className="mp-stat__v num">
-            <IconCoin size={14} className="icon cyan" /> {fmtNumber(inPlay)}
+            <Obj name="coin" size={18} /> {fmtNumber(inPlay)}
           </span>
         </div>
         <div className="mp-stat">
           <span className="mp-stat__k">{t('mp.wonTotal')}</span>
-          <span className="mp-stat__v num lime">+{fmtNumber(wonTotal)}</span>
+          <span className={`mp-stat__v num${wonTotal > 0 ? ' lime' : ''}`}>+{fmtNumber(wonTotal)}</span>
         </div>
         <div className="mp-stat">
           <span className="mp-stat__k">{t('mp.hitRate')}</span>
@@ -82,72 +90,115 @@ export function MyPoolsScreen() {
       <div className="mp-panel" key={tab}>
         {tab === 'open' && (
           <>
-            <div className="mp-head">
-              <span className="mp-head__sub muted">{t('entries.openSub')}</span>
-            </div>
+            {waitingOnFeed && <OfflineState compact />}
             {open.length === 0 ? (
-              <EmptyState
-                icon={<IconTicket size={34} />}
-                title={t('entries.empty')}
-                sub={t('mp.emptyOpenSub')}
-                action={
-                  <button
-                    className="btn btn--primary"
-                    onClick={() => {
-                      haptic.impact('light');
-                      go('live');
-                    }}
-                  >
-                    {t('entries.emptyCta')}
-                  </button>
-                }
-              />
+              <>
+                <div className="card">
+                  <EmptyState
+                    art="empty-picks"
+                    title={t('entries.empty')}
+                    body={t('mp.emptyOpenSub')}
+                    action={
+                      <button className="btn btn--primary" onClick={toLive}>
+                        {t('pv2.toLive')}
+                      </button>
+                    }
+                  />
+                </div>
+                <ExamplePick />
+              </>
             ) : (
-              <div className="list">
-                {open.map((e) => (
-                  <EntryCard key={e.id} e={e} onOpen={() => openEntry(e)} />
-                ))}
-              </div>
+              <>
+                <div className="mp-head">{t('pv2.mp.openSub')}</div>
+                <div className="mp-list">
+                  {open.map((e) => (
+                    <EntryCard key={e.id} e={e} onOpen={() => openEntry(e)} />
+                  ))}
+                </div>
+              </>
             )}
           </>
         )}
         {tab === 'settled' && (
           <>
-            <div className="mp-head">
-              <span className="mp-head__sub muted">{t('entries.settledSub')}</span>
-            </div>
             {settled.length === 0 ? (
-              <EmptyState icon={<IconTrophy size={34} />} title={t('mp.emptySettled')} sub={t('mp.emptySettledSub')} />
-            ) : (
-              <div className="list">
-                {settled.map((e) => (
-                  <EntryCard key={e.id} e={e} onOpen={() => openEntry(e)} />
-                ))}
+              <div className="card">
+                <EmptyState
+                  art="empty-results"
+                  title={t('mp.emptySettled')}
+                  body={t('mp.emptySettledSub')}
+                  action={
+                    open.length > 0 && (
+                      <button className="btn btn--ghost" onClick={() => setTab('open')}>
+                        {t('pv2.mp.settledEmptyCta')}
+                      </button>
+                    )
+                  }
+                />
               </div>
+            ) : (
+              <>
+                <div className="mp-head">{t('entries.settledSub')}</div>
+                <div className="mp-list">
+                  {settled.map((e) => (
+                    <EntryCard key={e.id} e={e} onOpen={() => openEntry(e)} />
+                  ))}
+                </div>
+              </>
             )}
           </>
         )}
-        {tab === 'history' && (
-          <div className="list mp-history">
-            {txs.length === 0 && <EmptyState icon={<IconCoin size={34} />} title={t('mp.emptyHistory')} />}
-            {txs.map((x) => (
-              <TxRow key={x.id} x={x} onOpen={x.entryId && entries.some((e) => e.id === x.entryId) ? () => push({ name: 'entry', entryId: x.entryId! }) : undefined} />
-            ))}
-          </div>
-        )}
+        {tab === 'history' &&
+          (txs.length === 0 ? (
+            <div className="card">
+              <EmptyState art="empty-history" title={t('mp.emptyHistory')} compact />
+            </div>
+          ) : (
+            <div className="card mp-history">
+              {txs.map((x) => (
+                <TxRow key={x.id} x={x} onOpen={x.entryId && entries.some((e) => e.id === x.entryId) ? () => push({ name: 'entry', entryId: x.entryId! }) : undefined} />
+              ))}
+            </div>
+          ))}
       </div>
     </div>
   );
 }
 
-function EmptyState({ icon, title, sub, action }: { icon: ReactNode; title: string; sub?: string; action?: ReactNode }) {
+/** A static, labelled sample ticket so a first-time player sees what they are about to make. */
+function ExamplePick() {
   return (
-    <div className="card empty mp-empty">
-      <div className="empty__orb">{icon}</div>
-      <div className="empty__title">{title}</div>
-      {sub && <div className="empty__sub">{sub}</div>}
-      {action && <div className="mp-empty__action">{action}</div>}
-    </div>
+    <figure className="mp-example">
+      <figcaption className="mp-example__cap">{t('pv2.mp.example')}</figcaption>
+      <div className="card ticket ticket--pending ticket--example" aria-hidden="true">
+        <div className="ticket__main">
+          <span className="ticket__icon">
+            <IcSwords size={20} />
+          </span>
+          <div className="ticket__info">
+            <div className="ticket__kicker">{t('pv2.mp.ex.fam')}</div>
+            <div className="ticket__q">{t('pv2.mp.ex.q')}</div>
+          </div>
+          <span className="badge badge--ghost">{t('pv2.mp.exampleTag')}</span>
+        </div>
+        <div className="ticket__perf" />
+        <div className="ticket__stats">
+          <div className="ticket__stat ticket__stat--pick">
+            <span className="ticket__k">{t('entries.yourPick')}</span>
+            <span className="ticket__v">{t('pv2.mp.ex.pick')}</span>
+          </div>
+          <div className="ticket__stat">
+            <span className="ticket__k">{t('entries.stake')}</span>
+            <span className="ticket__v num">25</span>
+          </div>
+          <div className="ticket__stat ticket__stat--end">
+            <span className="ticket__k">{t('entries.potential')}</span>
+            <span className="ticket__v ticket__v--pay num">≈64</span>
+          </div>
+        </div>
+      </div>
+      <p className="mp-example__hint">{t('pv2.mp.ex.hint')}</p>
+    </figure>
   );
 }
 
@@ -166,13 +217,13 @@ function TxRow({ x, onOpen }: { x: Tx; onOpen?: () => void }) {
       <span className={`mp-tx__icon mp-tx__icon--${tone}`}>
         <Icon size={18} />
       </span>
-      <div className="mp-tx__main">
-        <div className="mp-tx__title">{t(`wallet.tx.${x.kind}`)}</div>
-        <div className="muted num mp-tx__meta ellipsis">
+      <span className="mp-tx__main">
+        <span className="mp-tx__title">{t(`wallet.tx.${x.kind}`)}</span>
+        <span className="num mp-tx__meta ellipsis">
           {fmtDate(x.at, { day: 'numeric', month: 'short' })} · {fmtClock(x.at)}
           {x.entryId ? ` · ${x.entryId}` : ''}
-        </div>
-      </div>
+        </span>
+      </span>
       <span className={`num mp-tx__amt ${x.amount > 0 ? 'lime' : x.amount < 0 ? 'mp-tx__amt--neg' : ''}`}>
         {x.amount > 0 ? '+' : x.amount < 0 ? '−' : ''}
         {fmtNumber(Math.abs(x.amount))}
@@ -181,11 +232,11 @@ function TxRow({ x, onOpen }: { x: Tx; onOpen?: () => void }) {
     </>
   );
   return onOpen ? (
-    <Card className="mp-tx" pad={false} onClick={onOpen} ariaLabel={t(`wallet.tx.${x.kind}`)}>
+    <button type="button" className="mp-tx" onClick={() => (haptic.tap(), onOpen())} aria-label={`${t(`wallet.tx.${x.kind}`)} ${x.amount > 0 ? '+' : ''}${fmtNumber(x.amount)}`}>
       {body}
-    </Card>
+    </button>
   ) : (
-    <div className="card mp-tx">{body}</div>
+    <div className="mp-tx">{body}</div>
   );
 }
 
@@ -195,17 +246,19 @@ function EntryCard({ e, onOpen }: { e: Entry; onOpen: () => void }) {
   const tx = poolTexts(e.pool);
   const state = e.state.toLowerCase();
   return (
-    <Card className={`ticket ticket--${state}`} pad={false} glow={e.state === 'WON'} onClick={onOpen} ariaLabel={`${tx.question} · ${t(`entries.${state === 'pending' ? 'pending' : state}`)}`}>
+    <Card className={`ticket ticket--${state}`} pad={false} onClick={onOpen} ariaLabel={`${tx.question} · ${t(`entries.${state === 'pending' ? 'pending' : state}`)}`}>
       <div className="ticket__main">
-        <span className="ticket__icon">
-          <StateIcon e={e} />
+        <span className="ticket__icon" aria-hidden="true">
+          <MechIcon pool={e.pool} size={20} />
         </span>
         <div className="ticket__info">
           <div className="ticket__kicker ellipsis">{tx.title}</div>
           <div className="ticket__q clamp-2">{tx.question}</div>
-          <div className="ticket__meta ellipsis">
-            <span className="ticket__flag">{flagEmoji(meta?.countryCode ?? '')}</span>
-            {e.meetingName[lang] || meta?.name} · {fmtDate(e.createdAt, { day: 'numeric', month: 'short' })} {fmtClock(e.createdAt)}
+          <div className="ticket__meta">
+            <Flag cc={meta?.countryCode} size={16} />
+            <span className="ellipsis">
+              {e.meetingName[lang] || meta?.name} · {fmtDate(e.createdAt, { day: 'numeric', month: 'short' })} {fmtClock(e.createdAt)}
+            </span>
           </div>
         </div>
         <div className="ticket__side">
